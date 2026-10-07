@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../models/calendar_event_model.dart';
 import '../services/google_calendar_service.dart';
 import '../services/auth_service.dart';
+import '../controllers/auth_controller.dart';
 
 class CalendarController extends GetxController {
   final GoogleCalendarService _calendarService = GoogleCalendarService();
@@ -16,17 +17,9 @@ class CalendarController extends GetxController {
   final Rx<DateTime> focusedDay = DateTime.now().obs;
   final RxDouble calendarComplianceRate = 0.0.obs;
   
-  // Connection Diagnostics State
   final RxBool isCalendarConnected = false.obs;
   final RxString calendarConnectionStatus = 'ยังไม่ได้เชื่อมต่อ'.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // ไม่ fetch events ทันที — รอให้ User เข้าสู่ระบบและกดปุ่ม
-  }
-
-  /// ดึง Events จาก Google Calendar API
   Future<void> fetchEvents() async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -56,7 +49,6 @@ class CalendarController extends GetxController {
     }
   }
 
-  /// สร้าง Event ใหม่ลง Google Calendar (Two-way Sync)
   Future<bool> createEvent({
     required String title,
     required DateTime startTime,
@@ -89,22 +81,56 @@ class CalendarController extends GetxController {
     }
   }
 
-  /// กรอง Events ตามวันที่เลือก
+  Future<void> addEvent({
+    required String title,
+    required String description,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final AuthController authCtrl = Get.find<AuthController>();
+    final user = authCtrl.currentUser.value;
+    if (user == null) {
+      Get.snackbar('Error', 'Please sign in first', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    
+    try {
+      isLoading.value = true;
+      final success = await createEvent(title: title, startTime: startTime, endTime: endTime, description: description);
+      if (success) {
+        Get.snackbar('Success', 'Event "$title" added successfully', snackPosition: SnackPosition.BOTTOM);
+      } else {
+        Get.snackbar('Error', errorMessage.value, snackPosition: SnackPosition.BOTTOM);
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateEvent({required String eventId, required String title, required String description}) async {
+    final index = events.indexWhere((e) => e.id == eventId);
+    if (index == -1) return;
+    final event = events[index];
+    final updated = CalendarEventModel(id: event.id, title: title, description: description, startTime: event.startTime, endTime: event.endTime, calendarId: event.calendarId, isAllDay: event.isAllDay);
+    events[index] = updated;
+    events.refresh();
+    Get.snackbar('Success', 'Event updated', snackPosition: SnackPosition.BOTTOM);
+  }
+
+  Future<void> deleteEvent(String eventId) async {
+    events.removeWhere((e) => e.id == eventId);
+    Get.snackbar('Success', 'Event deleted', snackPosition: SnackPosition.BOTTOM);
+  }
+
   List<CalendarEventModel> getEventsForDay(DateTime day) {
     return events.where((CalendarEventModel e) => e.isOnDate(day)).toList();
   }
 
-  /// คำนวณ Calendar Compliance Rate (events ที่ผ่านมาแล้วในสัปดาห์นี้)
   void _calculateComplianceRate() {
     final DateTime now = DateTime.now();
     final DateTime weekStart = now.subtract(Duration(days: now.weekday - 1));
-    final List<CalendarEventModel> thisWeekPast = events
-        .where((CalendarEventModel e) => e.startTime.isAfter(weekStart) && e.startTime.isBefore(now))
-        .toList();
-    final List<CalendarEventModel> thisWeekAll = events
-        .where((CalendarEventModel e) =>
-            e.startTime.isAfter(weekStart) && e.startTime.isBefore(weekStart.add(const Duration(days: 7))))
-        .toList();
+    final List<CalendarEventModel> thisWeekPast = events.where((CalendarEventModel e) => e.startTime.isAfter(weekStart) && e.startTime.isBefore(now)).toList();
+    final List<CalendarEventModel> thisWeekAll = events.where((CalendarEventModel e) => e.startTime.isAfter(weekStart) && e.startTime.isBefore(weekStart.add(const Duration(days: 7)))).toList();
     if (thisWeekAll.isEmpty) {
       calendarComplianceRate.value = 0.0;
       return;
@@ -112,10 +138,8 @@ class CalendarController extends GetxController {
     calendarComplianceRate.value = (thisWeekPast.length / thisWeekAll.length).clamp(0.0, 1.0);
   }
 
-  /// เปลี่ยนวันที่เลือกใน Calendar
   void selectDay(DateTime day, DateTime focused) {
     selectedDay.value = day;
     focusedDay.value = focused;
   }
 }
-

@@ -17,12 +17,6 @@ class AuthController extends GetxController {
   final RxString connectionStatus = 'ยังไม่ได้ตรวจสอบ'.obs;
 
   @override
-  void onInit() {
-    super.onInit();
-    // ไม่ตรวจสอบ session ทันที — รอให้ User กดปุ่มเอง
-  }
-  
-  @override
   void onReady() {
     super.onReady();
     _checkFirebaseConnection();
