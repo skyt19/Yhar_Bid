@@ -18,7 +18,7 @@ build/
 !.env.example
 google-services.json
 GoogleService-Info.plist
-firebase_options.dart
+# Note: firebase_options.dart CAN be committed (Web API Keys are public)
 
 # IDE
 .idea/
