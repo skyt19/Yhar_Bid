@@ -3,13 +3,11 @@
 /// + ปุ่ม Calendar API ตรงกลาง + Bottom Nav 4 ปุ่มวงกลม
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/auth_controller.dart';
 import '../controllers/calendar_controller.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/ai_controller.dart';
 import 'theme/app_theme.dart';
 import 'widgets/bottom_nav_bar.dart';
-import '../main.dart';
 import 'ai_chatbot_view.dart';
 import 'calendar_view.dart';
 import 'habit_tracker_view.dart';

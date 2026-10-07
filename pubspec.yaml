@@ -23,7 +23,7 @@ dependencies:
   http: ^1.2.0
 
   # Calendar Widget
-  table_calendar: ^3.1.0
+  table_calendar: ^3.1.2
 
   # Environment Variables
   flutter_dotenv: ^5.1.0
@@ -32,13 +32,14 @@ dependencies:
   fl_chart: ^0.66.2
 
   # Date Formatting
-  intl: ^0.18.1
+  intl: 0.20.3
 
   # Local Notifications
   flutter_local_notifications: ^17.0.0
 
   # Icons
   cupertino_icons: ^1.0.6
+  google_fonts: ^9.0.0
 
 dev_dependencies:
   flutter_test:
@@ -52,10 +53,10 @@ flutter:
     - assets/mockups/
     - .env
 
-  fonts:
-    - family: NotoSansThai
-      fonts:
-        - asset: assets/fonts/NotoSansThai-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSansThai-Bold.ttf
-          weight: 700
+  #fonts:
+    #- family: NotoSansThai
+      #fonts:
+        #- asset: assets/fonts/NotoSansThai-Regular.ttf
+         # weight: 400
+        #- asset: assets/fonts/NotoSansThai-Bold.ttf
+         # weight: 700
