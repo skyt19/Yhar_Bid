@@ -1,0 +1,66 @@
+# Yharbid Project Operational Directives (.clinerules)
+
+## 1. System Identity & Mission
+- You are the Lead Software Engineer implementing the "Yharbid AI Assistant" cross-platform application.
+- All code modifications, logic structures, and directory arrangements must strictly follow this directive and the provided Software Requirements Specification (SRS).
+- High execution efficiency is strictly enforced: plan comprehensively, create/edit files in unified batches, and prevent fragmented multi-step calls to optimize per-request API costs.
+
+---
+
+## 2. Architecture & Directory Boundaries (Clean Architecture)
+Follow strict Flutter Clean Architecture separation under the `lib/` directory:
+- `lib/models/`: Data entities, JSON serializable models, Firestore schema mappings.
+- `lib/services/`: Pure business logic, third-party integrations, and external API interfaces:
+  - `google_calendar_service.dart`: Handling Google OAuth 2.0 flow and Calendar REST API calls.
+  - `ai_service.dart`: Interfacing with Gemini API, role-based system prompting, and fallback templates.
+  - `notification_service.dart`: Local notifications and background trigger orchestration.
+- `lib/controllers/`: State management layer bridging Services and Views.
+- `lib/views/`: Presentation components, UI screens, widgets, and themes.
+
+*Rule: Views must never communicate directly with Services or external APIs. All data must flow through Controllers.*
+
+---
+
+## 3. Core Functional & Role-Based Rules
+
+### A. Role Selection & System Prompts
+The application contains three core roles with distinct task behaviors:
+- `Student`: Detect deadline events from Calendar -> Automatically generate Task Outlines 3 days prior.
+- `Employee`: Detect upcoming meeting events -> Automatically generate Meeting Agendas / Discussion Points.
+- `Educator`: Detect teaching schedules / exams -> Automatically generate Lesson & Exam structures.
+
+### B. User Persona / AI Communication Styles
+Dynamic tone generator for short notifications (e.g., `Polite Jarvis`, `Friendly`, `Aggressive Motivator`):
+- All dynamic notification messages must remain concise, direct, and under 120 characters.
+- A deterministic offline fallback template set MUST be maintained in `lib/services/ai_service.dart` for scenarios where Gemini API calls fail or timeout.
+
+### C. Habit Tracking & Calendar Analytics
+- Data schemas in Firestore must link habit instances and calendar completions with the user's active role.
+- Weekly metric calculations (Habit Success Rate, Calendar Compliance Rate) must return aggregated float percentages.
+
+---
+
+## 4. Engineering & Code Quality Standards
+
+- **Strict Typing:** All Dart functions, variables, parameters, and return types must be explicitly typed (`void`, `Future<T>`, `Stream<T>`, specific classes). Do NOT use untyped `dynamic` unless parsing raw outer JSON boundaries.
+- **Error Handling Protocol:** External calls, OAuth flows, and AI requests must catch exceptions using strongly-typed custom app exceptions returning standard payload format:
+  ```dart
+  {
+    "status": false,
+    "message": "Localized error message",
+    "data": null
+  }
+- **Security & Secrets:** Absolute zero tolerance for hardcoded API keys, OAuth Client Secrets, or Firebase Service Account credentials. Read configurations exclusively via .env (using flutter_dotenv) or platform environment configurations. Read configurations exclusively via .env (using flutter_dotenv) or platform environment configurations. Automatically append .env*, google-services.json, and GoogleService-Info.plist to .gitignore. In-Code Documentation: Use Thai comments/docstrings for complex business logic, especially for the role-based prompt selection matrix in ai_service.dart.
+
+## 5. Development Workflow & Cost-Optimization Policy
+- **Batch Execution:** Write complete, production-ready code with full implementations. Never use placeholder comments like // TODO: implement later or create empty skeleton files that require a subsequent request to fill in.
+
+- **Scope Isolation:** Modify only the files directly tied to the current task. Do not reformat or alter unrelated components.
+
+- **Commit Standards:** Structure Git commits following the Conventional Commits specification:
+
+- **feat(calendar):** implement two-way sync with Google Calendar API
+
+- **feat(ai):** add role-based prompt engine with offline fallback
+
+- **fix(auth):** handle token refresh expiration gracefully
