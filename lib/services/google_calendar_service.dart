@@ -13,7 +13,9 @@ class CalendarServiceResponse {
 
 class GoogleCalendarService {
   static const String _baseUrl = 'https://www.googleapis.com/calendar/v3';
+  // ignore: unused_element
   String get _clientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+  // ignore: unused_element
   String get _clientSecret => dotenv.env['GOOGLE_CLIENT_SECRET'] ?? '';
 
   Future<CalendarServiceResponse> fetchUpcomingEvents(
