@@ -1,0 +1,61 @@
+name: yharbid
+description: Yharbid — Adaptive Routine & Reminder Assistant (AI-powered role-based assistant)
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  get: ^4.6.6
+
+  # Firebase
+  firebase_core: ^2.27.0
+  cloud_firestore: ^4.15.0
+  firebase_auth: ^4.17.0
+
+  # Google Sign-In & Calendar
+  google_sign_in: ^6.2.1
+  http: ^1.2.0
+
+  # Calendar Widget
+  table_calendar: ^3.1.0
+
+  # Environment Variables
+  flutter_dotenv: ^5.1.0
+
+  # Charts (Analytics Dashboard)
+  fl_chart: ^0.66.2
+
+  # Date Formatting
+  intl: ^0.18.1
+
+  # Local Notifications
+  flutter_local_notifications: ^17.0.0
+
+  # Icons
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/mockups/
+    - .env
+
+  fonts:
+    - family: NotoSansThai
+      fonts:
+        - asset: assets/fonts/NotoSansThai-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansThai-Bold.ttf
+          weight: 700
