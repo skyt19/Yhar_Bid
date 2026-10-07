@@ -11,19 +11,48 @@ class AuthController extends GetxController {
   final Rxn<UserModel> currentUser = Rxn<UserModel>();
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
+  
+  // Connection Diagnostics State
+  final RxBool isFirebaseConnected = false.obs;
+  final RxString connectionStatus = 'ยังไม่ได้ตรวจสอบ'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _checkExistingSession();
+    // ไม่ตรวจสอบ session ทันที — รอให้ User กดปุ่มเอง
+  }
+  
+  @override
+  void onReady() {
+    super.onReady();
+    _checkFirebaseConnection();
+  }
+  
+  /// ตรวจสอบการเชื่อมต่อ Firebase
+  Future<void> _checkFirebaseConnection() async {
+    try {
+      final user = _authService.getCurrentFirebaseUser();
+      isFirebaseConnected.value = true;
+      connectionStatus.value = user != null ? 'เชื่อมต่อ Firebase แล้ว' : 'Firebase พร้อมใช้งาน';
+    } catch (e) {
+      isFirebaseConnected.value = false;
+      connectionStatus.value = 'Firebase Error: ${e.toString()}';
+    }
   }
 
-  /// ตรวจสอบ Session ที่มีอยู่เมื่อเปิดแอป
-  Future<void> _checkExistingSession() async {
+  /// ตรวจสอบ Session ที่มีอยู่เมื่อ User กดปุ่ม (ไม่อัตโนมัติ)
+  Future<void> checkExistingSession() async {
+    isLoading.value = true;
+    connectionStatus.value = 'กำลังตรวจสอบ Session...';
     final AuthServiceResponse response = await _authService.checkExistingSession();
+    isLoading.value = false;
+    
     if (response.status && response.data != null) {
       currentUser.value = response.data as UserModel;
+      connectionStatus.value = 'พบ Session: ${currentUser.value!.email}';
       Get.offAllNamed(AppRoutes.dashboard);
+    } else {
+      connectionStatus.value = response.message;
     }
   }
 

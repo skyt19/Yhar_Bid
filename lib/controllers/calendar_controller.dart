@@ -15,21 +15,28 @@ class CalendarController extends GetxController {
   final Rx<DateTime> selectedDay = DateTime.now().obs;
   final Rx<DateTime> focusedDay = DateTime.now().obs;
   final RxDouble calendarComplianceRate = 0.0.obs;
+  
+  // Connection Diagnostics State
+  final RxBool isCalendarConnected = false.obs;
+  final RxString calendarConnectionStatus = 'ยังไม่ได้เชื่อมต่อ'.obs;
 
   @override
   void onInit() {
     super.onInit();
-    fetchEvents();
+    // ไม่ fetch events ทันที — รอให้ User เข้าสู่ระบบและกดปุ่ม
   }
 
   /// ดึง Events จาก Google Calendar API
   Future<void> fetchEvents() async {
     isLoading.value = true;
     errorMessage.value = '';
+    calendarConnectionStatus.value = 'กำลังเชื่อมต่อ Google Calendar...';
 
     final String? token = await _authService.getAccessToken();
     if (token == null || token.isEmpty) {
       errorMessage.value = 'กรุณาเข้าสู่ระบบก่อนใช้งาน Calendar';
+      calendarConnectionStatus.value = 'ไม่มี Access Token';
+      isCalendarConnected.value = false;
       isLoading.value = false;
       return;
     }
@@ -40,8 +47,12 @@ class CalendarController extends GetxController {
     if (response.status && response.data != null) {
       events.value = response.data as List<CalendarEventModel>;
       _calculateComplianceRate();
+      isCalendarConnected.value = true;
+      calendarConnectionStatus.value = 'เชื่อมต่อสำเร็จ: ${events.length} events';
     } else {
       errorMessage.value = response.message;
+      calendarConnectionStatus.value = 'ล้มเหลว: ${response.message}';
+      isCalendarConnected.value = false;
     }
   }
 

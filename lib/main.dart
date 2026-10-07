@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'views/theme/app_theme.dart';
 import 'views/login_view.dart';
 import 'views/main_dashboard_view.dart';
@@ -18,6 +20,7 @@ import 'views/proactive_task_view.dart';
 import 'views/habit_tracker_view.dart';
 import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
+import 'views/diagnostics_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/calendar_controller.dart';
@@ -29,13 +32,24 @@ Future<void> main() async {
   try {
     await dotenv.load(fileName: '.env');
   } catch (e) {
-    // .env ไม่มีหรือหาไม่เจอ — ใช้ค่า default
     debugPrint('Warning: .env file not found. Using default configuration.');
   }
   
-  Get.put<AuthController>(AuthController());
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('✅ Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('⚠️ Firebase initialization error: $e');
+  }
+  
+  // Register Controllers
   Get.put<SettingsController>(SettingsController());
+  Get.put<AuthController>(AuthController());
   Get.put<CalendarController>(CalendarController());
+  
   runApp(const YharbidApp());
 }
 
@@ -53,9 +67,9 @@ class YharbidApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
 
-      initialRoute: AppRoutes.test,
+      initialRoute: AppRoutes.diagnostics,
       getPages: [
-        GetPage(name: AppRoutes.test, page: () => const ServiceTestView()),
+        GetPage(name: AppRoutes.diagnostics, page: () => const DiagnosticsView()),
         GetPage(name: AppRoutes.login, page: () => const LoginView()),
         GetPage(name: AppRoutes.roleSelection, page: () => const RoleSelectionView()),
         GetPage(name: AppRoutes.aiPersonality, page: () => const AiPersonalityView()),
@@ -77,6 +91,7 @@ class YharbidApp extends StatelessWidget {
 /// Route constants — ชื่อ Route ทุกหน้า
 class AppRoutes {
   AppRoutes._();
+  static const String diagnostics = '/diagnostics';
   static const String test = '/test';
   static const String login = '/login';
   static const String roleSelection = '/role-selection';

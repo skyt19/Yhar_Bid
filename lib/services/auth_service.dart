@@ -16,8 +16,9 @@ class AuthServiceResponse {
 
 /// Service Layer สำหรับ Authentication — ห้าม depend on Controllers
 class AuthService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  /// Lazy Getters เพื่อป้องกัน Web Crash — ไม่ eager initialize
+  FirebaseAuth get _firebaseAuth => FirebaseAuth.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
   /// GoogleSignIn Instance พร้อม Calendar Scope
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: <String>[
