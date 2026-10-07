@@ -18,19 +18,14 @@ import 'views/proactive_task_view.dart';
 import 'views/habit_tracker_view.dart';
 import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
-import 'controllers/auth_controller.dart';
-import 'controllers/settings_controller.dart';
+import 'controllers/calendar_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // โหลด Environment Variables จาก .env (API keys, config)
   await dotenv.load(fileName: '.env');
-
-  // ลงทะเบียน Global Controllers ก่อน runApp
   Get.put<AuthController>(AuthController());
   Get.put<SettingsController>(SettingsController());
-
+  Get.put<CalendarController>(CalendarController());
   runApp(const YharbidApp());
 }
 
@@ -48,9 +43,9 @@ class YharbidApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
 
-      // Route Map ทุกหน้าของแอปพลิเคชัน
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.test,
       getPages: [
+        GetPage(name: AppRoutes.test, page: () => const ServiceTestView()),
         GetPage(name: AppRoutes.login, page: () => const LoginView()),
         GetPage(name: AppRoutes.roleSelection, page: () => const RoleSelectionView()),
         GetPage(name: AppRoutes.aiPersonality, page: () => const AiPersonalityView()),
@@ -72,6 +67,7 @@ class YharbidApp extends StatelessWidget {
 /// Route constants — ชื่อ Route ทุกหน้า
 class AppRoutes {
   AppRoutes._();
+  static const String test = '/test';
   static const String login = '/login';
   static const String roleSelection = '/role-selection';
   static const String aiPersonality = '/ai-personality';
@@ -86,3 +82,59 @@ class AppRoutes {
   static const String analytics = '/analytics';
   static const String notificationSettings = '/notification-settings';
 }
+
+class ServiceTestView extends StatelessWidget {
+  const ServiceTestView({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final AuthController authCtrl = Get.find<AuthController>();
+    final CalendarController calCtrl = Get.find<CalendarController>();
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(title: const Text('Service Test'), centerTitle: true, backgroundColor: AppTheme.accentPrimary, foregroundColor: Colors.white),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Obx(() => Text(authCtrl.currentUser.value != null ? 'Logged: ${authCtrl.currentUser.value!.email}' : 'Not logged in', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: authCtrl.isLoading.value ? null : () async => await authCtrl.signInWithGoogle(),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              child: const Text('Sign in with Google'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: calCtrl.isLoading.value ? null : () async => await calCtrl.fetchEvents(),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentSecondary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              child: const Text('Sync Calendar'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                final bool success = await calCtrl.createEvent(title: 'Test Event', startTime: DateTime.now().add(const Duration(hours: 1)), endTime: DateTime.now().add(const Duration(hours: 2)), description: 'Created by Yharbid');
+                Get.snackbar(success ? 'สำเร็จ' : 'ล้มเหลว', success ? 'สร้าง Event สำเร็จ' : calCtrl.errorMessage.value);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              child: const Text('Create Test Event'),
+            ),
+            const SizedBox(height: 24),
+            Obx(() => Expanded(
+                  child: calCtrl.events.isEmpty
+                      ? const Center(child: Text('No events'))
+                      : ListView.builder(
+                          itemCount: calCtrl.events.length,
+                          itemBuilder: (BuildContext ctx, int i) {
+                            final event = calCtrl.events[i];
+                            return ListTile(leading: const Icon(Icons.event, color: AppTheme.accentPrimary), title: Text(event.title), subtitle: Text('${event.startTime.day}/${event.startTime.month}'));
+                          },
+                        ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
