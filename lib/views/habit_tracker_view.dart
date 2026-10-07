@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/auth_controller.dart';
-import '../models/habit_model.dart';
 import '../models/user_model.dart';
 import 'theme/app_theme.dart';
 import 'widgets/habit_card.dart';

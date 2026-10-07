@@ -43,7 +43,7 @@ class AppTheme {
         fontFamily: 'NotoSansThai',
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardLight,
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -106,7 +106,7 @@ class AppTheme {
         fontFamily: 'NotoSansThai',
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardDark,
       elevation: 2,
       shape: RoundedRectangleBorder(

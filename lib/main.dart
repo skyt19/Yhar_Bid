@@ -18,11 +18,21 @@ import 'views/proactive_task_view.dart';
 import 'views/habit_tracker_view.dart';
 import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
+import 'controllers/auth_controller.dart';
+import 'controllers/settings_controller.dart';
 import 'controllers/calendar_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  
+  // โหลด .env พร้อม fallback ป้องกัน crash
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // .env ไม่มีหรือหาไม่เจอ — ใช้ค่า default
+    debugPrint('Warning: .env file not found. Using default configuration.');
+  }
+  
   Get.put<AuthController>(AuthController());
   Get.put<SettingsController>(SettingsController());
   Get.put<CalendarController>(CalendarController());
