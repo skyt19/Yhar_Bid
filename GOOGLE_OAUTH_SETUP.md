@@ -12,6 +12,36 @@ appClientId != null
 
 ---
 
+## Common Error: "Access blocked: Authorization Error - no registered origin"
+
+```
+Error 401: invalid_client
+Access blocked: Authorization Error
+no registered origin
+```
+
+**สาเหตุ:** Authorized JavaScript origins ใน Google Cloud Console ยังไม่มี `http://localhost:8080`
+
+**วิธีแก้:**
+
+1. เปิด [Google Cloud Console - Credentials](https://console.cloud.google.com/apis/credentials)
+2. คลิก Web Client ID ที่ใช้
+3. เพิ่มใน **Authorized JavaScript origins:**
+   ```
+   http://localhost:8080
+   http://localhost
+   ```
+4. เพิ่มใน **Authorized redirect URIs:**
+   ```
+   http://localhost:8080
+   http://localhost:8080/
+   http://localhost
+   ```
+5. คลิก **SAVE** และรอ 1-5 นาที
+6. Refresh แอปและลองอีกครั้ง
+
+---
+
 ## ขั้นตอนการแก้ไข
 
 ### 1. สร้าง OAuth 2.0 Client ID สำหรับ Web
@@ -33,6 +63,7 @@ appClientId != null
      ```
      http://localhost:8080
      http://localhost:8080/
+     http://localhost
      ```
 
 6. คลิก **CREATE**
@@ -67,7 +98,7 @@ appClientId != null
 ### 4. ทดสอบ
 
 ```bash
-flutter run -d chrome
+flutter run -d chrome --web-port=8080
 ```
 
 หรือ
@@ -111,13 +142,35 @@ d:/project/
 **สาเหตุ:** ไม่ได้ใส่ Client ID ใน `web/index.html`
 **วิธีแก้:** ตรวจสอบขั้นตอนที่ 2 ด้านบน
 
-### Error: `unauthorized_client`
+### Error: `unauthorized_client` / `invalid_client`
 **สาเหตุ:** URL ใน Authorized JavaScript origins ไม่ตรงกับที่ run
-**วิธีแก้:** เพิ่ม `http://localhost:port` ใน Google Cloud Console
+**วิธีแก้:** เพิ่ม `http://localhost:8080` ใน Google Cloud Console → OAuth Client → Authorized JavaScript origins
 
 ### Error: `redirect_uri_mismatch`
 **สาเหตุ:** Redirect URI ไม่ตรงกับที่ตั้งค่าไว้
 **วิธีแก้:** เพิ่ม redirect URI ที่แสดงใน error message ลงใน Google Cloud Console
+
+### Error: `popup_closed`
+**สาเหตุ:** User ปิด popup หรือ browser บล็อก popup
+**วิธีแก้:** 
+- อนุญาต popup ในการตั้งค่า browser
+- ปิด popup blocker สำหรับ localhost
+
+### Error: `Access blocked: no registered origin`
+**สาเหตุ:** Origin (`http://localhost:8080`) ยังไม่ได้เพิ่มใน Authorized JavaScript origins
+**วิธีแก้:**
+1. ไปที่ Google Cloud Console
+2. Edit Web OAuth Client
+3. เพิ่ม `http://localhost:8080` และ `http://localhost` ใน Authorized JavaScript origins
+4. SAVE และรอ 1-5 นาที
+
+---
+
+## Important Notes
+
+⚠️ **Configuration Changes อาจใช้เวลา 1-5 นาที** ในการมีผล
+✅ **Clear browser cache** หากยังไม่ได้หลังจากรอแล้ว
+✅ **Restart Flutter app** ด้วย `R` (Hot restart) หลังแก้ไข
 
 ---
 
@@ -125,3 +178,4 @@ d:/project/
 
 ⚠️ **อย่า commit Web Client ID ลงใน `.env`** เพราะ Web Client ID สามารถเปิดเผยได้ (เป็น public)
 ✅ **Desktop Client Secret ต้องเก็บเป็นความลับ** (อยู่ใน `.env` และ `.gitignore`)
+✅ **Web Client ID ใส่ใน `web/index.html`** โดยตรงและ commit ได้ (เป็น public configuration)
