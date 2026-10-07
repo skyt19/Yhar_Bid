@@ -107,9 +107,30 @@ class TasksView extends StatelessWidget {
       backgroundColor: const Color(0xFF1E293B),
       title: const Text('New Task', style: TextStyle(color: Color(0xFFF8FAFC))),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: titleCtrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Task Title', labelStyle: TextStyle(color: Color(0xFF94A3B8)), border: OutlineInputBorder(), focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF38BDF8))))),
+        TextField(
+          controller: titleCtrl, 
+          style: const TextStyle(color: Color(0xFFF8FAFC)), 
+          decoration: const InputDecoration(
+            labelText: 'Task Title', 
+            labelStyle: TextStyle(color: Color(0xFF94A3B8)), 
+            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))), 
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF38BDF8), width: 2))
+          )
+        ),
         const SizedBox(height: 16),
-        TextField(controller: descCtrl, style: const TextStyle(color: Colors.white), maxLines: 3, decoration: const InputDecoration(labelText: 'Description', labelStyle: TextStyle(color: Color(0xFF94A3B8)), border: OutlineInputBorder())),
+        TextField(
+          controller: descCtrl, 
+          style: const TextStyle(color: Color(0xFFF8FAFC)), 
+          maxLines: 3, 
+          decoration: const InputDecoration(
+            labelText: 'Description', 
+            labelStyle: TextStyle(color: Color(0xFF94A3B8)), 
+            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF38BDF8), width: 2))
+          )
+        ),
       ]),
       actions: [
         TextButton(onPressed: () => Get.back(), child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8)))),
@@ -125,12 +146,33 @@ class TasksView extends StatelessWidget {
       backgroundColor: const Color(0xFF1E293B),
       title: const Text('Edit Task', style: TextStyle(color: Color(0xFFF8FAFC))),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: titleCtrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'Task Title', labelStyle: TextStyle(color: Color(0xFF94A3B8)), border: OutlineInputBorder())),
+        TextField(
+          controller: titleCtrl, 
+          style: const TextStyle(color: Color(0xFFF8FAFC)), 
+          decoration: const InputDecoration(
+            labelText: 'Task Title', 
+            labelStyle: TextStyle(color: Color(0xFF94A3B8)), 
+            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF38BDF8), width: 2))
+          )
+        ),
         const SizedBox(height: 16),
-        TextField(controller: descCtrl, style: const TextStyle(color: Colors.white), maxLines: 3, decoration: const InputDecoration(labelText: 'Description', labelStyle: TextStyle(color: Color(0xFF94A3B8)), border: OutlineInputBorder())),
+        TextField(
+          controller: descCtrl, 
+          style: const TextStyle(color: Color(0xFFF8FAFC)), 
+          maxLines: 3, 
+          decoration: const InputDecoration(
+            labelText: 'Description', 
+            labelStyle: TextStyle(color: Color(0xFF94A3B8)), 
+            border: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF334155))),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF38BDF8), width: 2))
+          )
+        ),
       ]),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+        TextButton(onPressed: () => Get.back(), child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8)))),
         ElevatedButton(onPressed: () { Get.back(); Get.snackbar('Success', 'Task updated', snackPosition: SnackPosition.BOTTOM); }, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF38BDF8)), child: const Text('Update')),
       ],
     ));

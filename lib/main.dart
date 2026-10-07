@@ -67,7 +67,7 @@ class YharbidApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
 
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.login,
       getPages: [
         GetPage(name: AppRoutes.home, page: () => const MainLayoutView()),
         GetPage(name: AppRoutes.login, page: () => const LoginView()),

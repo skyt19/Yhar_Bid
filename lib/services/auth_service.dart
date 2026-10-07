@@ -80,7 +80,10 @@ class AuthService {
         );
         return AuthServiceResponse(status: true, message: 'เข้าสู่ระบบสำเร็จ (ผู้ใช้ใหม่)', data: newUser);
       }
+    } on FirebaseAuthException catch (e) {
+      return AuthServiceResponse(status: false, message: 'Firebase Auth Error: ${e.code} - ${e.message ?? "ไม่ทราบสาเหตุ"}');
     } catch (e) {
+      // จัดการ error อื่นๆ รวมถึง PlatformException
       return AuthServiceResponse(status: false, message: 'เข้าสู่ระบบไม่สำเร็จ: ${e.toString()}');
     }
   }
