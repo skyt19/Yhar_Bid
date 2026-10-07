@@ -20,7 +20,7 @@ import 'views/proactive_task_view.dart';
 import 'views/habit_tracker_view.dart';
 import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
-import 'views/diagnostics_view.dart';
+import 'views/main_layout_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/calendar_controller.dart';
@@ -67,9 +67,9 @@ class YharbidApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
 
-      initialRoute: AppRoutes.diagnostics,
+      initialRoute: AppRoutes.home,
       getPages: [
-        GetPage(name: AppRoutes.diagnostics, page: () => const DiagnosticsView()),
+        GetPage(name: AppRoutes.home, page: () => const MainLayoutView()),
         GetPage(name: AppRoutes.login, page: () => const LoginView()),
         GetPage(name: AppRoutes.roleSelection, page: () => const RoleSelectionView()),
         GetPage(name: AppRoutes.aiPersonality, page: () => const AiPersonalityView()),
@@ -91,6 +91,7 @@ class YharbidApp extends StatelessWidget {
 /// Route constants — ชื่อ Route ทุกหน้า
 class AppRoutes {
   AppRoutes._();
+  static const String home = '/';
   static const String diagnostics = '/diagnostics';
   static const String test = '/test';
   static const String login = '/login';
