@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../controllers/calendar_controller.dart';
 import '../controllers/habit_controller.dart';
 import '../controllers/ai_controller.dart';
+import '../controllers/task_controller.dart';
 import 'theme/app_theme.dart';
 import 'dashboard_home_view.dart';
 import 'calendar_view.dart';
@@ -29,6 +30,7 @@ class _MainDashboardViewState extends State<MainDashboardView> {
     if (!Get.isRegistered<CalendarController>()) Get.put<CalendarController>(CalendarController());
     if (!Get.isRegistered<HabitController>()) Get.put<HabitController>(HabitController());
     if (!Get.isRegistered<AiController>()) Get.put<AiController>(AiController());
+    if (!Get.isRegistered<TaskController>()) Get.put<TaskController>(TaskController());
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final CalendarController calendarCtrl = Get.find<CalendarController>();

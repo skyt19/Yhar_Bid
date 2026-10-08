@@ -65,24 +65,43 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       }
     }
 
-    final bool success = await taskCtrl.addTask(
+    final bool taskSuccess = await taskCtrl.addTask(
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       dueDate: dueDate,
       category: _priority,
     );
 
-    if (success && _syncToCalendar && dueDate != null) {
+    if (!taskSuccess) {
+      Get.snackbar('Error', 'ไม่สามารถบันทึกงานได้', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Sync to Google Calendar if checkbox enabled
+    if (_syncToCalendar && dueDate != null) {
       final CalendarController calCtrl = Get.find<CalendarController>();
-      await calCtrl.createEvent(
+      final bool calendarSuccess = await calCtrl.createEvent(
         title: _titleController.text.trim(),
         startTime: dueDate,
         endTime: dueDate.add(const Duration(hours: 1)),
         description: _descriptionController.text.trim(),
       );
+
+      if (calendarSuccess) {
+        // Force refresh calendar events
+        await calCtrl.fetchEvents();
+        Get.snackbar('สำเร็จ', 'บันทึกงาน "${_titleController.text}" และซิงค์ลง Google Calendar แล้ว', 
+            snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 3));
+      } else {
+        Get.snackbar('คำเตือน', 'บันทึกงานสำเร็จ แต่ไม่สามารถซิงค์ลง Calendar ได้', 
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } else {
+      Get.snackbar('สำเร็จ', 'บันทึกงาน "${_titleController.text}" แล้ว', 
+          snackPosition: SnackPosition.BOTTOM);
     }
 
-    if (success) Get.back();
+    Get.back();
   }
 
   @override
