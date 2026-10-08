@@ -43,6 +43,23 @@ class _AiChatbotViewState extends State<AiChatbotView> {
           ),
           child: Column(
             children: <Widget>[
+              // Quick Prompt Buttons
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: AppTheme.backgroundLight,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(AppTheme.radiusMedium), topRight: Radius.circular(AppTheme.radiusMedium)),
+                ),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: <Widget>[
+                    _buildQuickPromptChip(aiCtrl, Icons.summarize, 'quick_prompt_weekly'.tr, () => aiCtrl.askWeeklySummary()),
+                    _buildQuickPromptChip(aiCtrl, Icons.priority_high, 'quick_prompt_urgent'.tr, () => aiCtrl.askUrgentTasks()),
+                    _buildQuickPromptChip(aiCtrl, Icons.meeting_room, 'quick_prompt_meeting'.tr, () => aiCtrl.askMeetingPrep()),
+                  ],
+                ),
+              ),
               Expanded(
                 child: Obx(() {
                   final List<Map<String, String>> messages = aiCtrl.chatMessages;
@@ -121,6 +138,29 @@ class _AiChatbotViewState extends State<AiChatbotView> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickPromptChip(AiController aiCtrl, IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.cardLight,
+          borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+          border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 16, color: AppTheme.accentPrimary),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary)),
+          ],
         ),
       ),
     );
