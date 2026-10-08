@@ -26,6 +26,9 @@ import 'views/main_layout_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/calendar_controller.dart';
+import 'controllers/task_controller.dart';
+import 'controllers/ai_controller.dart';
+import 'controllers/habit_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +57,9 @@ Future<void> main() async {
   Get.put<SettingsController>(SettingsController());
   Get.put<AuthController>(AuthController());
   Get.put<CalendarController>(CalendarController());
+  Get.put<TaskController>(TaskController());
+  Get.put<AiController>(AiController());
+  Get.put<HabitController>(HabitController());
   
   runApp(const YharbidApp());
 }

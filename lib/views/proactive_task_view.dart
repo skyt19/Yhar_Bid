@@ -107,9 +107,8 @@ class _ProactiveTaskViewState extends State<ProactiveTaskView> {
               ? null
               : () async {
                   setState(() => _isLoading = true);
-                  final TaskPreparationModel? prep = await aiCtrl.generateTaskPreparation(
-                      event, authCtrl.currentUser.value?.role ?? UserRole.student, authCtrl.currentUser.value?.uid ?? '');
-                  if (prep != null) setState(() => _preparations.add(prep));
+                  final String prep = await aiCtrl.generateEventPreparation(event);
+                  Get.snackbar('AI Preparation', prep, snackPosition: SnackPosition.BOTTOM);
                   setState(() => _isLoading = false);
                 },
           style: ElevatedButton.styleFrom(

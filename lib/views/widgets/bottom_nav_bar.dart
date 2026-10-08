@@ -17,9 +17,9 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_NavItem> items = <_NavItem>[
-      _NavItem(icon: Icons.dashboard_outlined, labelKey: 'dashboard'),
+      _NavItem(icon: Icons.psychology_outlined, labelKey: 'ai_assistant'),
       _NavItem(icon: Icons.calendar_month_outlined, labelKey: 'calendar'),
-      _NavItem(icon: Icons.task_outlined, labelKey: 'tasks'),
+      _NavItem(icon: Icons.assignment_outlined, labelKey: 'tasks_manage'),
       _NavItem(icon: Icons.settings_outlined, labelKey: 'settings'),
     ];
 

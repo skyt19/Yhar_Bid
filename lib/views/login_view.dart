@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/settings_controller.dart';
-import 'theme/app_theme.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
