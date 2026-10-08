@@ -20,7 +20,7 @@ class SettingsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('ตั้งค่า', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('settings'.tr, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: AppTheme.backgroundLight,
         elevation: 0,
@@ -30,9 +30,21 @@ class SettingsView extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   margin: const EdgeInsets.only(right: 16),
-                  decoration: BoxDecoration(color: AppTheme.cardLight, borderRadius: BorderRadius.circular(AppTheme.radiusPill)),
-                  child: Text(settingsCtrl.languageCode.value == 'th' ? 'TH/EN' : 'EN/TH',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentPrimary,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(Icons.language, color: Colors.white, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        settingsCtrl.languageCode.value == 'th' ? 'TH' : 'EN',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
               )),
         ],
