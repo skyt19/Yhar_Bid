@@ -20,7 +20,9 @@ dependencies:
 
   # Google Sign-In & Calendar
   google_sign_in: ^6.2.1
+  google_sign_in_web: ^0.12.4+2
   http: ^1.2.0
+  googleapis_auth: ^1.6.0  # OAuth 2.0 token management
 
   # Calendar Widget
   table_calendar: ^3.1.2

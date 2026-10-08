@@ -65,8 +65,8 @@ class GoogleCalendarService {
       final Map<String, dynamic> eventBody = <String, dynamic>{
         'summary': title,
         'description': description ?? '',
-        'start': isAllDay ? <String, dynamic>{'date': startTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': startTime.toIso8601String(), 'timeZone': 'UTC'},
-        'end': isAllDay ? <String, dynamic>{'date': endTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': endTime.toIso8601String(), 'timeZone': 'UTC'},
+        'start': isAllDay ? <String, dynamic>{'date': startTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': startTime.toIso8601String(), 'timeZone': 'Asia/Bangkok'},
+        'end': isAllDay ? <String, dynamic>{'date': endTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': endTime.toIso8601String(), 'timeZone': 'Asia/Bangkok'},
       };
       if (colorId != null && colorId.isNotEmpty) eventBody['colorId'] = colorId;
       final http.Response response = await http.post(uri, headers: <String, String>{'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json', 'Accept': 'application/json'}, body: json.encode(eventBody));
@@ -76,8 +76,22 @@ class GoogleCalendarService {
         return CalendarServiceResponse(status: true, message: 'สร้าง Event สำเร็จ', data: newEvent);
       } else if (response.statusCode == 401) {
         return const CalendarServiceResponse(status: false, message: 'Access Token หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+      } else if (response.statusCode == 403) {
+        String errorMsg = 'ไม่มีสิทธิ์เขียนปฏิทิน กรุณาอนุญาต Calendar Access';
+        try {
+          final Map<String, dynamic> err = json.decode(response.body) as Map<String, dynamic>;
+          errorMsg += '\nDetail: ${err['error']?['message'] ?? response.body}';
+        } catch (_) {}
+        return CalendarServiceResponse(status: false, message: errorMsg);
       } else {
-        return CalendarServiceResponse(status: false, message: 'ไม่สามารถสร้าง Event ได้ (HTTP ${response.statusCode})');
+        String errorMsg = 'ไม่สามารถสร้าง Event ได้ (HTTP ${response.statusCode})';
+        try {
+          final Map<String, dynamic> err = json.decode(response.body) as Map<String, dynamic>;
+          errorMsg += '\nError: ${err['error']?['message'] ?? response.body}';
+        } catch (_) {
+          errorMsg += '\nResponse: ${response.body.substring(0, 200)}';
+        }
+        return CalendarServiceResponse(status: false, message: errorMsg);
       }
     } catch (e) {
       return CalendarServiceResponse(status: false, message: 'เกิดข้อผิดพลาดในการสร้าง Event: ${e.toString()}');
@@ -90,8 +104,8 @@ class GoogleCalendarService {
       final Map<String, dynamic> eventBody = <String, dynamic>{
         'summary': title,
         'description': description ?? '',
-        'start': isAllDay ? <String, dynamic>{'date': startTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': startTime.toIso8601String(), 'timeZone': 'UTC'},
-        'end': isAllDay ? <String, dynamic>{'date': endTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': endTime.toIso8601String(), 'timeZone': 'UTC'},
+        'start': isAllDay ? <String, dynamic>{'date': startTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': startTime.toIso8601String(), 'timeZone': 'Asia/Bangkok'},
+        'end': isAllDay ? <String, dynamic>{'date': endTime.toIso8601String().substring(0, 10)} : <String, dynamic>{'dateTime': endTime.toIso8601String(), 'timeZone': 'Asia/Bangkok'},
       };
       if (colorId != null && colorId.isNotEmpty) eventBody['colorId'] = colorId;
       final http.Response response = await http.put(uri, headers: <String, String>{'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json', 'Accept': 'application/json'}, body: json.encode(eventBody));

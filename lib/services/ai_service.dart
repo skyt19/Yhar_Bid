@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/user_model.dart';
 import '../models/calendar_event_model.dart';
+import '../core/config/app_config.dart';
 
 /// Standard AI Service Response Format
 class AiServiceResponse {
@@ -70,8 +71,17 @@ class AiService {
   }) async {
     final String? apiKey = dotenv.env['GEMINI_API_KEY'];
     if (apiKey == null || apiKey.isEmpty) {
-      return AiServiceResponse(status: false, message: 'GEMINI_API_KEY ไม่พบใน .env', data: _getFallbackTemplate(role));
+      // Fallback to AppConfig embedded key
+      final String fallbackKey = AppConfig.geminiApiKey;
+      if (fallbackKey.isEmpty) {
+        return AiServiceResponse(status: false, message: 'GEMINI_API_KEY unavailable', data: _getFallbackTemplate(role));
+      }
+      return await _callGeminiApi(fallbackKey, prompt, role, maxTokens);
     }
+    return await _callGeminiApi(apiKey, prompt, role, maxTokens);
+  }
+
+  Future<AiServiceResponse> _callGeminiApi(String apiKey, String prompt, UserRole role, int maxTokens) async {
 
     final String systemPrompt = _buildSystemPrompt(role);
     final String fullPrompt = '$systemPrompt\n\n$prompt';
