@@ -29,6 +29,7 @@ import 'controllers/calendar_controller.dart';
 import 'controllers/task_controller.dart';
 import 'controllers/ai_controller.dart';
 import 'controllers/habit_controller.dart';
+import 'core/config/app_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,9 +40,14 @@ Future<void> main() async {
   // โหลด .env พร้อม fallback ป้องกัน crash
   try {
     await dotenv.load(fileName: '.env');
+    debugPrint('✅ [Main] .env loaded successfully');
   } catch (e) {
-    debugPrint('Warning: .env file not found. Using default configuration.');
+    debugPrint('⚠️ [Main] .env file not found. Using built-in fallback configuration.');
   }
+  
+  // Validate AppConfig (will use fallback if .env missing)
+  AppConfig.validate();
+  AppConfig.printStatus();
   
   // Initialize Firebase
   try {
