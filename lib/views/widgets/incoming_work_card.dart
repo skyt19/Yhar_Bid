@@ -1,3 +1,5 @@
+library;
+
 /// lib/views/widgets/incoming_work_card.dart
 /// Card แสดงงานที่กำลังจะถึง Deadline (Incoming Work)
 import 'package:flutter/material.dart';

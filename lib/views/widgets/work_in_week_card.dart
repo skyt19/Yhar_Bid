@@ -1,3 +1,5 @@
+library;
+
 /// lib/views/widgets/work_in_week_card.dart
 /// Card สรุปงานในสัปดาห์นี้ (Work in Week)
 import 'package:flutter/material.dart';
