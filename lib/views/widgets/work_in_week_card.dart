@@ -82,14 +82,14 @@ class WorkInWeekCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildStatRow(
                   icon: Icons.check_circle,
-                  label: 'เสร็จแล้ว',
+                  label: 'completed_tasks'.tr,
                   value: '$completedTasks',
                   color: AppTheme.accentSecondary,
                 ),
                 const SizedBox(height: 12),
                 _buildStatRow(
                   icon: Icons.pending_actions,
-                  label: 'ยังค้าง',
+                  label: 'remaining_tasks'.tr,
                   value: '$remainingTasks',
                   color: Colors.orange,
                 ),
@@ -143,9 +143,9 @@ class WorkInWeekCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            const Text(
-              'อัตราปฏิบัติตาม',
-              style: TextStyle(
+            Text(
+              'compliance_rate'.tr,
+              style: const TextStyle(
                 fontSize: 13,
                 color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w500,

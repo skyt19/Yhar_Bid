@@ -32,15 +32,23 @@ class _MainDashboardViewState extends State<MainDashboardView> {
     if (!Get.isRegistered<CalendarController>()) Get.put<CalendarController>(CalendarController());
     if (!Get.isRegistered<HabitController>()) Get.put<HabitController>(HabitController());
     if (!Get.isRegistered<AiController>()) Get.put<AiController>(AiController());
+    
+    // Auto-sync calendar เมื่อเปิดแอป
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final CalendarController calendarCtrl = Get.find<CalendarController>();
+      if (calendarCtrl.events.isEmpty) {
+        calendarCtrl.fetchEvents();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = <Widget>[
-      _buildDashboardHome(),
-      const CalendarView(),
-      const HabitTrackerView(),
-      const SettingsView(),
+      _buildDashboardHome(), // หน้าแรก: สรุปภาพรวม
+      const CalendarView(),  // หน้า 2: ปฏิทิน
+      const HabitTrackerView(), // หน้า 3: งานของฉัน
+      const SettingsView(), // หน้า 4: ตั้งค่า
     ];
 
     return Scaffold(
@@ -148,7 +156,7 @@ class _MainDashboardViewState extends State<MainDashboardView> {
             children: <Widget>[
               Icon(Icons.calendar_today, color: AppTheme.accentPrimary, size: 24),
               const SizedBox(width: 8),
-              Text('calendar_api'.tr,
+              Text('calendar_integration'.tr,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
             ],
           ),
@@ -309,7 +317,7 @@ class _MainDashboardViewState extends State<MainDashboardView> {
   Future<void> _syncCalendar(CalendarController calendarCtrl) async {
     await calendarCtrl.fetchEvents();
     if (calendarCtrl.errorMessage.value.isEmpty) {
-      Get.snackbar('calendar_synced'.tr, '${calendarCtrl.events.length} รายการ',
+      Get.snackbar('calendar_synced'.tr, '${calendarCtrl.events.length} ${'events_found'.tr}',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppTheme.accentSecondary,
           colorText: Colors.white,
@@ -351,7 +359,7 @@ class _MainDashboardViewState extends State<MainDashboardView> {
           ElevatedButton(
             onPressed: () async {
               if (titleController.text.trim().isEmpty) {
-                Get.snackbar('error'.tr, 'กรุณาใส่ชื่อกิจกรรม', snackPosition: SnackPosition.BOTTOM);
+                Get.snackbar('please_enter_title'.tr, '', snackPosition: SnackPosition.BOTTOM);
                 return;
               }
 
