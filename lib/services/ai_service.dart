@@ -19,11 +19,10 @@ class AiServiceResponse {
 class AiService {
   static const String _geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
   
-  /// Gemma Model Fallback Chain ตามคำสั่งในโจทย์
+  /// Gemma Model Fallback Chain ตามคำสั่ง: gemma-4-26b-a4b-it → gemma-4-31b-it
   static const List<String> _modelPriority = <String>[
-    'gemini-pro',              // ใช้โมเดลที่มั่นใจว่าทำงานได้ก่อน
-    'gemini-1.5-flash',
-    'gemma-2-27b-it',
+    'gemma-4-26b-a4b-it',      // PRIMARY: Gemma 4 26B Apex Instruction-Tuned
+    'gemma-4-31b-it',          // FALLBACK: Gemma 4 31B Instruction-Tuned
   ];
 
   /// Offline Fallback Templates ตาม .clinerules Section 3.B

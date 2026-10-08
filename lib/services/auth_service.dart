@@ -20,11 +20,12 @@ class AuthService {
   FirebaseAuth get _firebaseAuth => FirebaseAuth.instance;
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
-  /// GoogleSignIn Instance พร้อม Calendar Scope
+  /// GoogleSignIn Instance พร้อม Calendar Scope (FULL WRITE ACCESS)
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: <String>[
     'email',
     'profile',
     'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/calendar',
   ]);
 
   /// ตรวจสอบ Session ปัจจุบัน (Silent Sign-In)
