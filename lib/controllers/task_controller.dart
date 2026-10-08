@@ -116,21 +116,30 @@ class TaskController extends GetxController {
     }
   }
   
-  /// ลบงาน
-  Future<void> deleteTask(TaskModel task) async {
+  /// ลบงาน (overload สำหรับ String id และ TaskModel)
+  Future<void> deleteTask(dynamic taskOrId) async {
     final AuthController authCtrl = Get.find<AuthController>();
     final user = authCtrl.currentUser.value;
     if (user == null) return;
+    
+    String taskId;
+    if (taskOrId is String) {
+      taskId = taskOrId;
+    } else if (taskOrId is TaskModel) {
+      taskId = taskOrId.id;
+    } else {
+      return;
+    }
     
     try {
       await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('tasks')
-          .doc(task.id)
+          .doc(taskId)
           .delete();
       
-      tasks.removeWhere((t) => t.id == task.id);
+      tasks.removeWhere((TaskModel t) => t.id == taskId);
       Get.snackbar('สำเร็จ', 'ลบงานแล้ว', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       Get.snackbar('ข้อผิดพลาด', 'ไม่สามารถลบงานได้: $e',
