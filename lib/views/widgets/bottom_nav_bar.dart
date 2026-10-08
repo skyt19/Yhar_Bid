@@ -1,7 +1,7 @@
 /// lib/views/widgets/bottom_nav_bar.dart
-/// Bottom Navigation Bar — 4 ปุ่มวงกลม ตาม Mockup 3_Main.jpg
-/// ตำแหน่ง: AI จสวีส | Calendar | จัดการงาน | ตั้งค่า
+/// Bottom Navigation Bar — 4 ปุ่มวงกลม
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../theme/app_theme.dart';
 
 class AppBottomNavBar extends StatelessWidget {
@@ -14,18 +14,17 @@ class AppBottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  static const List<_NavItem> _items = <_NavItem>[
-    _NavItem(icon: Icons.smart_toy_outlined, label: 'AI จสวีส'),
-    _NavItem(icon: Icons.calendar_month_outlined, label: 'Calendar'),
-    _NavItem(icon: Icons.task_outlined, label: 'จัดการงาน'),
-    _NavItem(icon: Icons.settings_outlined, label: 'ตั้งค่า'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<_NavItem> items = <_NavItem>[
+      _NavItem(icon: Icons.dashboard_outlined, labelKey: 'dashboard'),
+      _NavItem(icon: Icons.calendar_month_outlined, labelKey: 'calendar'),
+      _NavItem(icon: Icons.task_outlined, labelKey: 'tasks'),
+      _NavItem(icon: Icons.settings_outlined, labelKey: 'settings'),
+    ];
+
     return Container(
       decoration: const BoxDecoration(
-        // ขอบบนโค้งตามสไตล์ Mockup
         color: AppTheme.backgroundLight,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppTheme.radiusLarge),
@@ -42,7 +41,7 @@ class AppBottomNavBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List<Widget>.generate(_items.length, (int index) {
+        children: List<Widget>.generate(items.length, (int index) {
           final bool isSelected = index == currentIndex;
           return GestureDetector(
             onTap: () => onTap(index),
@@ -53,12 +52,12 @@ class AppBottomNavBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.cardLight
-                    : AppTheme.cardLight.withOpacity(0.6),
+                    : AppTheme.cardLight.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
                 boxShadow: isSelected
                     ? <BoxShadow>[
                         BoxShadow(
-                          color: AppTheme.accentPrimary.withOpacity(0.25),
+                          color: AppTheme.accentPrimary.withValues(alpha: 0.25),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -69,19 +68,21 @@ class AppBottomNavBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Icon(
-                    _items[index].icon,
+                    items[index].icon,
                     color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
                     size: 24,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _items[index].label,
+                    items[index].labelKey.tr,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
                     ),
                     textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -95,6 +96,7 @@ class AppBottomNavBar extends StatelessWidget {
 
 class _NavItem {
   final IconData icon;
-  final String label;
-  const _NavItem({required this.icon, required this.label});
+  final String labelKey;
+  const _NavItem({required this.icon, required this.labelKey});
 }
+

@@ -101,10 +101,10 @@ class IncomingWorkCard extends StatelessWidget {
     final DateFormat dateFormat = DateFormat('dd MMM, HH:mm');
     final Duration timeUntil = event.startTime.difference(DateTime.now());
     final String urgencyLabel = timeUntil.inHours < 24
-        ? 'ด่วน!'
+        ? 'urgent'.tr
         : timeUntil.inDays == 1
-            ? 'พรุ่งนี้'
-            : '${timeUntil.inDays} วัน';
+            ? 'tomorrow'.tr
+            : '${timeUntil.inDays} ${'days_left'.tr}';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
