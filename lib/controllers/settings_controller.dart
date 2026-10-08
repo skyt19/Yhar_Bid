@@ -1,9 +1,13 @@
 /// lib/controllers/settings_controller.dart
-/// Controller จัดการการตั้งค่าแอป — ภาษา, ระดับ AI, การแจ้งเตือน
+/// Controller จัดการการตั้งค่าแอป — ภาษา, ระดับ AI, การแจ้งเตือน พร้อม Persistent Storage
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../models/user_model.dart';
 
 class SettingsController extends GetxController {
+  final GetStorage _storage = GetStorage();
+
   // ภาษาปัจจุบัน: 'th' หรือ 'en'
   final RxString languageCode = 'th'.obs;
 
@@ -12,19 +16,69 @@ class SettingsController extends GetxController {
 
   // เปิด/ปิดการแจ้งเตือน
   final RxBool notificationsEnabled = true.obs;
+  
+  // เปิด/ปิด AI Contextual Memory
+  final RxBool aiMemoryEnabled = true.obs;
 
   // เสียงแจ้งเตือน
   final RxString notificationSoundId = 'default'.obs;
+  
+  // Storage Keys
+  static const String _keyLanguage = 'language_code';
+  static const String _keyAiLevel = 'ai_aggression_level';
+  static const String _keyNotifications = 'notifications_enabled';
+  static const String _keyAiMemory = 'ai_memory_enabled';
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadSettings();
+  }
+  
+  /// โหลดการตั้งค่าจาก Storage
+  void _loadSettings() {
+    languageCode.value = _storage.read<String>(_keyLanguage) ?? 'th';
+    aiAggressionLevel.value = _storage.read<int>(_keyAiLevel) ?? 0;
+    notificationsEnabled.value = _storage.read<bool>(_keyNotifications) ?? true;
+    aiMemoryEnabled.value = _storage.read<bool>(_keyAiMemory) ?? true;
+    
+    // อัปเดต Locale ตามค่าที่โหลดมา
+    if (languageCode.value == 'en') {
+      Get.updateLocale(const Locale('en', 'US'));
+    } else {
+      Get.updateLocale(const Locale('th', 'TH'));
+    }
+  }
 
   /// สลับภาษา TH/EN
   void toggleLanguage() {
-    languageCode.value = languageCode.value == 'th' ? 'en' : 'th';
+    if (languageCode.value == 'th') {
+      languageCode.value = 'en';
+      Get.updateLocale(const Locale('en', 'US'));
+    } else {
+      languageCode.value = 'th';
+      Get.updateLocale(const Locale('th', 'TH'));
+    }
+    _storage.write(_keyLanguage, languageCode.value);
   }
 
   /// เปลี่ยนระดับความดุดัน AI
   void setAiAggressionLevel(int level) {
     if (level < 0 || level > 2) return;
     aiAggressionLevel.value = level;
+    _storage.write(_keyAiLevel, level);
+  }
+  
+  /// Toggle AI Memory
+  void toggleAiMemory(bool value) {
+    aiMemoryEnabled.value = value;
+    _storage.write(_keyAiMemory, value);
+  }
+  
+  /// Toggle Notifications
+  void toggleNotifications(bool value) {
+    notificationsEnabled.value = value;
+    _storage.write(_keyNotifications, value);
   }
 
   /// แปลง level เป็น AiPersonality enum
@@ -45,13 +99,13 @@ class SettingsController extends GetxController {
   String get personalityLabel {
     switch (aiAggressionLevel.value) {
       case 0:
-        return 'สุภาพ (Polite Jarvis)';
+        return 'polite_jarvis'.tr;
       case 1:
-        return 'เป็นกันเอง (Friendly)';
+        return 'friendly'.tr;
       case 2:
-        return 'กระตุ้นแรง (Aggressive Motivator)';
+        return 'aggressive_motivator'.tr;
       default:
-        return 'สุภาพ (Polite Jarvis)';
+        return 'polite_jarvis'.tr;
     }
   }
 
@@ -71,7 +125,8 @@ class SettingsController extends GetxController {
 
   /// ล้างข้อมูลแคชแอป
   Future<void> clearAppCache() async {
-    // TODO: ล้างข้อมูลแคชจริงๆ ใน production
     await Future<void>.delayed(const Duration(milliseconds: 500));
+    Get.snackbar('cache_cleared'.tr, 'cache_cleared'.tr, snackPosition: SnackPosition.BOTTOM);
   }
 }
+

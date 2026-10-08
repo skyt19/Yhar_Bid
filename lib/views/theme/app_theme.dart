@@ -20,6 +20,7 @@ class AppTheme {
   static const Color textDark = Color(0xFFFFFFFF);
   static const Color accentPrimary = Color(0xFF1976D2);
   static const Color accentSecondary = Color(0xFF4CAF50);
+  static const Color dividerColor = Color(0xFFE0E0E0);
 
   // ======== Border Radius คงที่ตาม Mockup ========
   static const double radiusSmall = 12.0;
