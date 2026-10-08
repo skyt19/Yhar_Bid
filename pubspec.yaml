@@ -37,6 +37,9 @@ dependencies:
   # Local Notifications
   flutter_local_notifications: ^17.0.0
 
+  # Persistent Storage
+  get_storage: ^2.1.1
+
   # Icons
   cupertino_icons: ^1.0.6
   google_fonts: ^9.0.0

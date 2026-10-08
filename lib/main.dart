@@ -1,11 +1,13 @@
 /// lib/main.dart
 /// จุดเข้าหลักของแอปพลิเคชัน Yharbid
-/// เริ่มต้น Firebase, Env Config และ Routing ผ่าน GetX
+/// เริ่มต้น Firebase, GetStorage, Env Config และ Routing ผ่าน GetX พร้อมระบบแปลภาษา
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'translations/app_translations.dart';
 import 'views/theme/app_theme.dart';
 import 'views/login_view.dart';
 import 'views/main_dashboard_view.dart';
@@ -27,6 +29,9 @@ import 'controllers/calendar_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize GetStorage สำหรับ Session Persistence
+  await GetStorage.init();
   
   // โหลด .env พร้อม fallback ป้องกัน crash
   try {
@@ -61,6 +66,11 @@ class YharbidApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Yharbid',
       debugShowCheckedModeBanner: false,
+
+      // Translation System — รองรับ TH/EN
+      translations: AppTranslations(),
+      locale: const Locale('th', 'TH'),
+      fallbackLocale: const Locale('en', 'US'),
 
       // Theme Engine — รองรับ Light/Dark ตาม Mockup
       theme: AppTheme.lightTheme,
