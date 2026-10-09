@@ -1,6 +1,8 @@
 /// lib/main.dart
 /// จุดเข้าหลักของแอปพลิเคชัน Yharbid
 /// เริ่มต้น Firebase, GetStorage, Env Config และ Routing ผ่าน GetX พร้อมระบบแปลภาษา
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -32,41 +34,85 @@ import 'controllers/habit_controller.dart';
 import 'core/config/app_config.dart';
 
 Future<void> main() async {
+  // ============================================
+  // STEP 1: Framework Initialization (CRITICAL)
+  // ============================================
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize GetStorage สำหรับ Session Persistence
-  await GetStorage.init();
+  // ============================================
+  // STEP 2: Global Error Handlers (Production Safety)
+  // ============================================
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('🚨 [Flutter Error Handler] ${details.exception}');
+    debugPrint('Stack Trace:\n${details.stack}');
+  };
   
-  // โหลด .env พร้อม fallback ป้องกัน crash
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    debugPrint('🚨 [Platform Error Handler] $error');
+    debugPrint('Stack Trace:\n$stack');
+    return true; // Prevent app crash
+  };
+  
+  // ============================================
+  // STEP 3: Local Storage Initialization
+  // ============================================
+  try {
+    await GetStorage.init();
+    debugPrint('✅ [Main] GetStorage initialized');
+  } catch (e) {
+    debugPrint('⚠️ [Main] GetStorage init failed: $e');
+  }
+  
+  // ============================================
+  // STEP 4: Environment Variables (Graceful Degradation)
+  // ============================================
   try {
     await dotenv.load(fileName: '.env');
     debugPrint('✅ [Main] .env loaded successfully');
   } catch (e) {
-    debugPrint('⚠️ [Main] .env file not found. Using built-in fallback configuration.');
+    debugPrint('⚠️ [Main] .env file not found (expected on Web Release). Using fallback configuration.');
   }
   
-  // Validate AppConfig (will use fallback if .env missing)
-  AppConfig.validate();
-  AppConfig.printStatus();
+  // ============================================
+  // STEP 5: Configuration Validation (NO EXCEPTIONS ALLOWED)
+  // ============================================
+  try {
+    AppConfig.validate();
+  } catch (e) {
+    debugPrint('⚠️ [Main] AppConfig validation warning: $e');
+  }
   
-  // Initialize Firebase
+  // ============================================
+  // STEP 6: Firebase Initialization (Critical for Production)
+  // ============================================
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    debugPrint('✅ Firebase initialized successfully');
+    debugPrint('✅ [Main] Firebase initialized successfully');
   } catch (e) {
-    debugPrint('⚠️ Firebase initialization error: $e');
+    debugPrint('⚠️ [Main] Firebase initialization error: $e');
+    // Continue execution - app can still work in offline mode
   }
   
-  // Register Controllers
-  Get.put<SettingsController>(SettingsController());
-  Get.put<AuthController>(AuthController());
-  Get.put<CalendarController>(CalendarController());
-  Get.put<TaskController>(TaskController());
-  Get.put<AiController>(AiController());
-  Get.put<HabitController>(HabitController());
+  // ============================================
+  // STEP 7: Dependency Injection (GetX Controllers)
+  // ============================================
+  try {
+    Get.put<SettingsController>(SettingsController());
+    Get.put<AuthController>(AuthController());
+    Get.put<CalendarController>(CalendarController());
+    Get.put<TaskController>(TaskController());
+    Get.put<AiController>(AiController());
+    Get.put<HabitController>(HabitController());
+    debugPrint('✅ [Main] All controllers registered');
+  } catch (e) {
+    debugPrint('⚠️ [Main] Controller registration error: $e');
+  }
   
+  // ============================================
+  // STEP 8: Launch Application
+  // ============================================
   runApp(const YharbidApp());
 }
 

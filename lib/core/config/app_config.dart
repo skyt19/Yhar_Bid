@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// AppConfig - Central Configuration Management with Built-in Fallback
@@ -34,43 +35,64 @@ class AppConfig {
 
   /// Gemini API Key (AI Service)
   /// Priority: .env -> Fallback constant
+  /// NEVER throws exceptions - returns placeholder if not configured
   static String get geminiApiKey {
-    final String? envKey = dotenv.env['GEMINI_API_KEY'];
-    if (envKey != null && envKey.isNotEmpty) {
-      return envKey;
+    try {
+      final String? envKey = dotenv.env['GEMINI_API_KEY'];
+      if (envKey != null && envKey.isNotEmpty) {
+        return envKey;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AppConfig] Error reading GEMINI_API_KEY from dotenv: $e');
     }
+    
     if (_FALLBACK_GEMINI_API_KEY.startsWith('YOUR_')) {
-      throw Exception('❌ [AppConfig] GEMINI_API_KEY not configured! Please set it in .env or app_config.dart');
+      debugPrint('❌ [AppConfig] GEMINI_API_KEY not configured! AI features will be disabled.');
+      return 'UNCONFIGURED_GEMINI_KEY';
     }
-    print('⚠️ [AppConfig] GEMINI_API_KEY not found in .env, using built-in fallback');
+    debugPrint('⚠️ [AppConfig] GEMINI_API_KEY not found in .env, using built-in fallback');
     return _FALLBACK_GEMINI_API_KEY;
   }
 
   /// Google OAuth Client ID
   /// Priority: .env -> Fallback constant
+  /// NEVER throws exceptions - returns placeholder if not configured
   static String get googleClientId {
-    final String? envId = dotenv.env['GOOGLE_CLIENT_ID'];
-    if (envId != null && envId.isNotEmpty) {
-      return envId;
+    try {
+      final String? envId = dotenv.env['GOOGLE_CLIENT_ID'];
+      if (envId != null && envId.isNotEmpty) {
+        return envId;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AppConfig] Error reading GOOGLE_CLIENT_ID from dotenv: $e');
     }
+    
     if (_FALLBACK_GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
-      throw Exception('❌ [AppConfig] GOOGLE_CLIENT_ID not configured! Please set it in .env or app_config.dart');
+      debugPrint('❌ [AppConfig] GOOGLE_CLIENT_ID not configured! Google Sign-In will be disabled.');
+      return 'UNCONFIGURED_CLIENT_ID';
     }
-    print('⚠️ [AppConfig] GOOGLE_CLIENT_ID not found in .env, using built-in fallback');
+    debugPrint('⚠️ [AppConfig] GOOGLE_CLIENT_ID not found in .env, using built-in fallback');
     return _FALLBACK_GOOGLE_CLIENT_ID;
   }
 
   /// Google OAuth Client Secret
   /// Priority: .env -> Fallback constant
+  /// NEVER throws exceptions - returns placeholder if not configured
   static String get googleClientSecret {
-    final String? envSecret = dotenv.env['GOOGLE_CLIENT_SECRET'];
-    if (envSecret != null && envSecret.isNotEmpty) {
-      return envSecret;
+    try {
+      final String? envSecret = dotenv.env['GOOGLE_CLIENT_SECRET'];
+      if (envSecret != null && envSecret.isNotEmpty) {
+        return envSecret;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AppConfig] Error reading GOOGLE_CLIENT_SECRET from dotenv: $e');
     }
+    
     if (_FALLBACK_GOOGLE_CLIENT_SECRET.startsWith('YOUR_')) {
-      throw Exception('❌ [AppConfig] GOOGLE_CLIENT_SECRET not configured! Please set it in .env or app_config.dart');
+      debugPrint('❌ [AppConfig] GOOGLE_CLIENT_SECRET not configured! Calendar sync will be disabled.');
+      return 'UNCONFIGURED_CLIENT_SECRET';
     }
-    print('⚠️ [AppConfig] GOOGLE_CLIENT_SECRET not found in .env, using built-in fallback');
+    debugPrint('⚠️ [AppConfig] GOOGLE_CLIENT_SECRET not found in .env, using built-in fallback');
     return _FALLBACK_GOOGLE_CLIENT_SECRET;
   }
 
@@ -79,41 +101,50 @@ class AppConfig {
   // ============================================
 
   /// Validate configuration on app startup
+  /// NEVER throws exceptions - only logs warnings
   static void validate() {
-    print('🔧 [AppConfig] Validating configuration...');
+    debugPrint('🔧 [AppConfig] Validating configuration...');
     
-    final bool hasEnvGemini = dotenv.env['GEMINI_API_KEY'] != null;
-    final bool hasEnvClientId = dotenv.env['GOOGLE_CLIENT_ID'] != null;
-    final bool hasEnvClientSecret = dotenv.env['GOOGLE_CLIENT_SECRET'] != null;
+    bool hasEnvGemini = false;
+    bool hasEnvClientId = false;
+    bool hasEnvClientSecret = false;
+    
+    try {
+      hasEnvGemini = dotenv.env['GEMINI_API_KEY'] != null && dotenv.env['GEMINI_API_KEY']!.isNotEmpty;
+      hasEnvClientId = dotenv.env['GOOGLE_CLIENT_ID'] != null && dotenv.env['GOOGLE_CLIENT_ID']!.isNotEmpty;
+      hasEnvClientSecret = dotenv.env['GOOGLE_CLIENT_SECRET'] != null && dotenv.env['GOOGLE_CLIENT_SECRET']!.isNotEmpty;
+    } catch (e) {
+      debugPrint('⚠️ [AppConfig] Error reading .env: $e');
+    }
     
     if (!hasEnvGemini || !hasEnvClientId || !hasEnvClientSecret) {
-      print('⚠️ [AppConfig] Some keys missing from .env, checking fallbacks:');
+      debugPrint('⚠️ [AppConfig] Some keys missing from .env, checking fallbacks:');
       if (!hasEnvGemini) {
         if (_FALLBACK_GEMINI_API_KEY.startsWith('YOUR_')) {
-          print('  ❌ GEMINI_API_KEY: NOT CONFIGURED');
+          debugPrint('  ❌ GEMINI_API_KEY: NOT CONFIGURED');
         } else {
-          print('  ✅ GEMINI_API_KEY: FALLBACK OK');
+          debugPrint('  ✅ GEMINI_API_KEY: FALLBACK OK');
         }
       }
       if (!hasEnvClientId) {
         if (_FALLBACK_GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
-          print('  ❌ GOOGLE_CLIENT_ID: NOT CONFIGURED');
+          debugPrint('  ❌ GOOGLE_CLIENT_ID: NOT CONFIGURED');
         } else {
-          print('  ✅ GOOGLE_CLIENT_ID: FALLBACK OK');
+          debugPrint('  ✅ GOOGLE_CLIENT_ID: FALLBACK OK');
         }
       }
       if (!hasEnvClientSecret) {
         if (_FALLBACK_GOOGLE_CLIENT_SECRET.startsWith('YOUR_')) {
-          print('  ❌ GOOGLE_CLIENT_SECRET: NOT CONFIGURED');
+          debugPrint('  ❌ GOOGLE_CLIENT_SECRET: NOT CONFIGURED');
         } else {
-          print('  ✅ GOOGLE_CLIENT_SECRET: FALLBACK OK');
+          debugPrint('  ✅ GOOGLE_CLIENT_SECRET: FALLBACK OK');
         }
       }
     } else {
-      print('✅ [AppConfig] All keys loaded from .env successfully');
+      debugPrint('✅ [AppConfig] All keys loaded from .env successfully');
     }
     
-    print('✅ [AppConfig] Configuration validated successfully');
+    debugPrint('✅ [AppConfig] Configuration validated successfully');
   }
 
   // ============================================
@@ -121,25 +152,38 @@ class AppConfig {
   // ============================================
 
   /// Print configuration status (for debugging)
+  /// NEVER throws exceptions - safe for production
   static void printStatus() {
-    print('📊 [AppConfig] Current Configuration Status:');
+    debugPrint('📊 [AppConfig] Current Configuration Status:');
     try {
       final String gemini = geminiApiKey;
-      print('  Gemini API Key: ${gemini.substring(0, gemini.length > 20 ? 20 : gemini.length)}...');
+      if (gemini == 'UNCONFIGURED_GEMINI_KEY') {
+        debugPrint('  Gemini API Key: NOT CONFIGURED');
+      } else {
+        debugPrint('  Gemini API Key: ${gemini.substring(0, gemini.length > 20 ? 20 : gemini.length)}...');
+      }
     } catch (e) {
-      print('  Gemini API Key: NOT CONFIGURED');
+      debugPrint('  Gemini API Key: ERROR - $e');
     }
     try {
       final String clientId = googleClientId;
-      print('  Google Client ID: ${clientId.substring(0, clientId.length > 30 ? 30 : clientId.length)}...');
+      if (clientId == 'UNCONFIGURED_CLIENT_ID') {
+        debugPrint('  Google Client ID: NOT CONFIGURED');
+      } else {
+        debugPrint('  Google Client ID: ${clientId.substring(0, clientId.length > 30 ? 30 : clientId.length)}...');
+      }
     } catch (e) {
-      print('  Google Client ID: NOT CONFIGURED');
+      debugPrint('  Google Client ID: ERROR - $e');
     }
     try {
       final String clientSecret = googleClientSecret;
-      print('  Google Client Secret: ${clientSecret.substring(0, clientSecret.length > 15 ? 15 : clientSecret.length)}...');
+      if (clientSecret == 'UNCONFIGURED_CLIENT_SECRET') {
+        debugPrint('  Google Client Secret: NOT CONFIGURED');
+      } else {
+        debugPrint('  Google Client Secret: ${clientSecret.substring(0, clientSecret.length > 15 ? 15 : clientSecret.length)}...');
+      }
     } catch (e) {
-      print('  Google Client Secret: NOT CONFIGURED');
+      debugPrint('  Google Client Secret: ERROR - $e');
     }
   }
 }
