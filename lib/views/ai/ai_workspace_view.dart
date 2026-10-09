@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/ai_controller.dart';
-import '../theme/app_theme.dart';
 
 class AIWorkspaceView extends StatelessWidget {
   const AIWorkspaceView({super.key});
@@ -12,11 +11,10 @@ class AIWorkspaceView extends StatelessWidget {
     final messageCtrl = TextEditingController();
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFFCFD8DC),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Obx(() => _buildChatHistory(aiCtrl)),
@@ -33,9 +31,9 @@ class AIWorkspaceView extends StatelessWidget {
     if (aiCtrl.chatMessages.isEmpty) {
       return const Center(
         child: Text(
-          'Start conversation...',
+          'เริ่มสนทนา...',
           style: TextStyle(
-            color: AppTheme.textSecondary,
+            color: Color(0xFF757575),
             fontSize: 16,
           ),
         ),
@@ -58,7 +56,7 @@ class AIWorkspaceView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            _buildAvatar('AI จาร์วิส'),
+            _buildAvatar('AI'),
             const SizedBox(width: 8),
           ],
           Container(
@@ -66,13 +64,13 @@ class AIWorkspaceView extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             constraints: BoxConstraints(maxWidth: MediaQuery.of(Get.context!).size.width * 0.7),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceLight,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
               content,
               style: const TextStyle(
-                color: AppTheme.textPrimary,
+                color: Colors.black,
                 fontSize: 14,
               ),
             ),
@@ -88,14 +86,14 @@ class AIWorkspaceView extends StatelessWidget {
 
   Widget _buildAvatar(String label) {
     return CircleAvatar(
-      radius: 20,
-      backgroundColor: AppTheme.surfaceLight,
+      radius: 24,
+      backgroundColor: Colors.white,
       child: Text(
-        label.substring(0, 2).toUpperCase(),
+        label == 'User' ? 'U' : 'AI',
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textPrimary,
+          color: Colors.black,
         ),
       ),
     );
@@ -105,18 +103,18 @@ class AIWorkspaceView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: ctrl,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: const TextStyle(color: Colors.black),
               decoration: const InputDecoration(
                 hintText: 'คุยกับ เอไอ....',
-                hintStyle: TextStyle(color: AppTheme.textSecondary),
+                hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
                 border: InputBorder.none,
               ),
               onSubmitted: (v) {
@@ -134,11 +132,10 @@ class AIWorkspaceView extends StatelessWidget {
                 ctrl.clear();
               }
             },
-            icon: const Icon(Icons.send, color: AppTheme.accentPrimary),
+            icon: const Icon(Icons.send, color: Color(0xFF4CAF50)),
           ),
         ],
       ),
     );
   }
 }
-

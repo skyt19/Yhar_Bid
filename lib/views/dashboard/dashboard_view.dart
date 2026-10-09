@@ -1,10 +1,7 @@
-/// lib/views/dashboard/dashboard_view.dart
-/// Dashboard — Strictly Matches assets/mockups2/หน้าเเรก.jpg
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/calendar_controller.dart';
 import '../../controllers/auth_controller.dart';
-import '../theme/app_theme.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
@@ -15,76 +12,60 @@ class DashboardView extends StatelessWidget {
     final authCtrl = Get.find<AuthController>();
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 2-column grid (Left + Right)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // LEFT COLUMN
               Expanded(
                 child: Column(
                   children: [
-                    _buildTaskCard('(task)', true),
-                    const SizedBox(height: 16),
+                    _buildTaskCard('(task)', '(Time)', true),
+                    const SizedBox(height: 12),
                     _buildIncomingWorkSection(),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
-              // RIGHT COLUMN
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   children: [
-                    _buildTaskCard('(task)', true),
-                    const SizedBox(height: 16),
+                    _buildTaskCard('(task)', '(Time)', true),
+                    const SizedBox(height: 12),
                     _buildWeekTaskCard(),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Bottom: Calendar API Section
+          const SizedBox(height: 16),
           _buildCalendarApiSection(calCtrl, authCtrl),
         ],
       ),
     );
   }
 
-  // Task Card with Toggle (White background)
-  Widget _buildTaskCard(String title, bool toggleValue) {
+  Widget _buildTaskCard(String title, String timeLabel, bool isToggled) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 100,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.cardLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: AppTheme.surfaceGray, width: 2),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF9E9E9E), width: 3),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
-          ),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '(Time)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 8),
-              _buildToggleSwitch(toggleValue),
+              Text(timeLabel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+              _buildToggleSwitch(isToggled),
             ],
           ),
         ],
@@ -92,200 +73,88 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-
-  // Custom Toggle Switch (Green when ON, Gray when OFF)
   Widget _buildToggleSwitch(bool value) {
     return Container(
-      width: 52,
-      height: 28,
+      width: 56,
+      height: 30,
       decoration: BoxDecoration(
-        color: value ? AppTheme.accentPrimary : AppTheme.accentSecondary,
-        borderRadius: BorderRadius.circular(14),
+        color: value ? const Color(0xFF4CAF50) : const Color(0xFFBDBDBD),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: AnimatedAlign(
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         child: Container(
-          margin: const EdgeInsets.all(2),
-          width: 24,
-          height: 24,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
+          width: 26,
+          height: 26,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
         ),
       ),
     );
   }
 
-  // Incoming Work Section (Dark Gray, 200px height)
   Widget _buildIncomingWorkSection() {
     return Container(
-      height: 200,
-      padding: const EdgeInsets.all(16),
+      height: 260,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceGray,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        color: const Color(0xFF757575),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF616161), width: 3),
       ),
       child: const Center(
-        child: Text(
-          'Incoming Work\n(On Day)',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
-        ),
+        child: Text('Incoming Work\n(On Day)', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black, height: 1.5)),
       ),
     );
   }
 
-  // Week Task Card (White header + Dark gray body)
   Widget _buildWeekTaskCard() {
     return Container(
+      height: 260,
       decoration: BoxDecoration(
-        color: AppTheme.cardLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        border: Border.all(color: AppTheme.surfaceGray, width: 2),
+        color: const Color(0xFF757575),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF616161), width: 3),
       ),
       child: Column(
         children: [
-          // White header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(AppTheme.radiusMedium),
-                topRight: Radius.circular(AppTheme.radiusMedium),
-              ),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(6), topRight: Radius.circular(6)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '(Word in week (task))',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
+                const Text('word in week (task)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+                const SizedBox(height: 8),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      '(Time)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+                    const Text('(Time)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
                     _buildToggleSwitch(true),
                   ],
                 ),
               ],
             ),
           ),
-          // Dark gray body
-          const Expanded(
-            child: Center(
-              child: Text(
-                '',
-                style: TextStyle(color: AppTheme.textDark),
-              ),
-            ),
-          ),
+          const Expanded(child: SizedBox()),
         ],
       ),
     );
   }
 
-  // Calendar API Section (Full Width Dark Gray)
   Widget _buildCalendarApiSection(CalendarController calCtrl, AuthController authCtrl) {
     return Container(
-      height: 300,
-      padding: const EdgeInsets.all(24),
+      height: 280,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceGray,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        color: const Color(0xFF757575),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF616161), width: 3),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Calendar API',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Obx(() {
-            if (authCtrl.currentUser.value == null) {
-              return _buildSignInButton(authCtrl);
-            }
-            return const Text(
-              'Synced',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppTheme.accentPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // Sign In Button (White pill with Google icon)
-  Widget _buildSignInButton(AuthController authCtrl) {
-    return ElevatedButton.icon(
-      onPressed: () => authCtrl.signInWithGoogle(),
-      icon: Container(
-        width: 24,
-        height: 24,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF4285F4),
-              Color(0xFFEA4335),
-              Color(0xFFFBBC05),
-              Color(0xFF34A853),
-            ],
-          ),
-        ),
-        child: const Center(
-          child: Text(
-            'G',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-      label: const Text(
-        'Sign in Google Calendar',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textPrimary,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.surfaceLight,
-        foregroundColor: AppTheme.textPrimary,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusPill),
-        ),
-        elevation: 0,
+      child: const Center(
+        child: Text('Calendar API', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black)),
       ),
     );
   }
