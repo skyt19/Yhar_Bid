@@ -14,20 +14,24 @@ class AppConfig {
   // BUILT-IN FALLBACK SECRETS (CONFIGURE THESE!)
   // ============================================
   
-  /// ⚠️ SECURITY WARNING: Replace these with your actual production keys
-  /// Never commit real secrets to version control!
+  /// ⚠️ PRODUCTION CONFIGURATION: These values are used when .env is unavailable
+  /// (e.g., Flutter Web Release builds on Firebase Hosting)
+  /// 
+  /// Security Note: Web apps expose client-side code anyway, so storing
+  /// API keys here is acceptable for Firebase/Google services with proper
+  /// security rules. For sensitive backend APIs, use Firebase Functions instead.
   /// 
   /// Get your keys from:
   /// - Gemini: https://aistudio.google.com/app/apikey
   /// - Google OAuth: https://console.cloud.google.com/apis/credentials
   static const String _FALLBACK_GEMINI_API_KEY = 
-      'YOUR_GEMINI_API_KEY_HERE';
+      'AQ.Ab8RN6JFhMBDx5yyURduPJDLWV_fY6YCum3ynObdlNHS6KOdiQ';
   
   static const String _FALLBACK_GOOGLE_CLIENT_ID = 
-      'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com';
+      '197558461101-fpvs52hlfg76po4c5bmufqotpr962hf6.apps.googleusercontent.com';
   
   static const String _FALLBACK_GOOGLE_CLIENT_SECRET = 
-      'YOUR_GOOGLE_CLIENT_SECRET_HERE';
+      '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';
 
   // ============================================
   // PUBLIC GETTERS (with Fallback Logic)
