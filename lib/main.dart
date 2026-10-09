@@ -67,10 +67,14 @@ Future<void> main() async {
   // STEP 4: Environment Variables (Graceful Degradation)
   // ============================================
   try {
+    // IMPORTANT: On Flutter Web Release builds, .env file is NOT included
+    // in build/web/ directory, so this will always fail and use fallback keys.
+    // This is expected behavior - see AppConfig._FALLBACK_* constants.
     await dotenv.load(fileName: '.env');
     debugPrint('✅ [Main] .env loaded successfully');
   } catch (e) {
-    debugPrint('⚠️ [Main] .env file not found (expected on Web Release). Using fallback configuration.');
+    // Expected on Web builds - not an error
+    debugPrint('ℹ️ [Main] .env not available (using fallback configuration)');
   }
   
   // ============================================
