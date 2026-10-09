@@ -51,6 +51,8 @@ class DashboardView extends StatelessWidget {
           _buildCalendarApiSection(calCtrl, authCtrl),
         ],
       ),
+    );
+  }
 
   // Task Card with Toggle (White background)
   Widget _buildTaskCard(String title, bool toggleValue) {
@@ -90,6 +92,7 @@ class DashboardView extends StatelessWidget {
     );
   }
 
+
   // Custom Toggle Switch (Green when ON, Gray when OFF)
   Widget _buildToggleSwitch(bool value) {
     return Container(
@@ -103,15 +106,19 @@ class DashboardView extends StatelessWidget {
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
         duration: const Duration(milliseconds: 200),
         child: Container(
+          margin: const EdgeInsets.all(2),
           width: 24,
           height: 24,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),
+        ),
+      ),
+    );
+  }
 
-  // Incoming Work Section (Dark Gray Background)
+  // Incoming Work Section (Dark Gray, 200px height)
   Widget _buildIncomingWorkSection() {
     return Container(
       height: 200,
@@ -126,7 +133,7 @@ class DashboardView extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
           ),
         ),
@@ -134,20 +141,21 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  // Word in Week Task Card (White + Dark Gray section)
+  // Week Task Card (White header + Dark gray body)
   Widget _buildWeekTaskCard() {
     return Container(
-      height: 200,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceGray,
+        color: AppTheme.cardLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(color: AppTheme.surfaceGray, width: 2),
       ),
       child: Column(
         children: [
+          // White header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: AppTheme.cardLight,
+              color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(AppTheme.radiusMedium),
                 topRight: Radius.circular(AppTheme.radiusMedium),
@@ -157,9 +165,9 @@ class DashboardView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'word in week (task)',
+                  '(Word in week (task))',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
                   ),
@@ -180,6 +188,7 @@ class DashboardView extends StatelessWidget {
               ],
             ),
           ),
+          // Dark gray body
           const Expanded(
             child: Center(
               child: Text(
@@ -281,12 +290,3 @@ class DashboardView extends StatelessWidget {
     );
   }
 }
-
-
-        ),
-      ),
-    );
-  }
-
-    );
-  }
