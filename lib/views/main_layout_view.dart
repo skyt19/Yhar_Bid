@@ -31,16 +31,16 @@ class MainLayoutView extends StatelessWidget {
     ];
     
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFFCFD8DC), // Background สีฟ้าเทาตาม Mockup
       appBar: AppBar(
-        backgroundColor: AppTheme.backgroundLight,
+        backgroundColor: const Color(0xFFCFD8DC),
         elevation: 0,
         title: const Text(
           'App V. xxx',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: AppTheme.textPrimary,
+            color: Colors.black,
           ),
         ),
         actions: [
@@ -54,7 +54,7 @@ class MainLayoutView extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: Colors.black,
                 ),
               ),
             ),

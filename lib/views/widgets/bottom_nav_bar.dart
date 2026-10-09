@@ -1,7 +1,7 @@
 /// lib/views/widgets/bottom_nav_bar.dart
-/// Bottom Navigation Bar — 4 Circular Icon Buttons (Mockup-Compliant)
+/// Bottom Navigation Bar — 4 Circular Icon Buttons (Mockup-Compliant 100%)
+/// สีพื้น: #757575 | วงกลมปุ่ม: สีขาว | ไอคอน: สีดำ | Google G: สีรุ้ง
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -17,15 +17,8 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 90,
-      decoration: BoxDecoration(
-        color: AppTheme.navBarBackground,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Color(0xFF757575), // สีเทาเข้มตาม Mockup
       ),
       child: SafeArea(
         child: Row(
@@ -49,18 +42,17 @@ class AppBottomNavBar extends StatelessWidget {
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
+          color: Colors.white, // วงกลมสีขาวตาม Mockup
           shape: BoxShape.circle,
-          border: Border.all(
-            color: isActive ? AppTheme.accentPrimary : Colors.transparent,
-            width: 3,
-          ),
+          border: isActive
+              ? Border.all(color: const Color(0xFF4CAF50), width: 3)
+              : null,
         ),
         child: icon is Widget
             ? icon
             : Icon(
                 icon as IconData,
-                color: isActive ? AppTheme.accentPrimary : AppTheme.textPrimary,
+                color: Colors.black, // ไอคอนสีดำตาม Mockup
                 size: 28,
               ),
       ),
