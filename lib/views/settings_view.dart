@@ -1,12 +1,8 @@
 /// lib/views/settings_view.dart
-/// Settings — Matches assets/mockups2/หน้าตั้งค่า.jpg
+/// Settings — Matches assets/mockups/หน้าตั้งค่า.jpg
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/auth_controller.dart';
 import '../controllers/settings_controller.dart';
-import '../models/user_model.dart';
-import 'theme/app_theme.dart';
-import 'widgets/custom_dialog.dart';
 import '../main.dart';
 
 class SettingsView extends StatelessWidget {
@@ -14,11 +10,10 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthController authCtrl = Get.find<AuthController>();
     final SettingsController settingsCtrl = Get.find<SettingsController>();
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: const Color(0xFFCFD8DC), // Background สีฟ้าเทาตาม Mockup
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -29,19 +24,19 @@ class SettingsView extends StatelessWidget {
               const Text(
                 'Setting',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 48, // ฟอนต์ใหญ่มากตาม Mockup
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
+                  color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
               // Menu Items
               _buildSettingsButton('การตั้งค่าขั้นสูง', () => Get.toNamed(AppRoutes.advancedSettings)),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               _buildSettingsButton('ปรับระดับ ไอไอช่วยจำ', () => Get.toNamed(AppRoutes.notificationSettings)),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               _buildSettingsButton('เปลี่ยนเสียงแจ้งเตือน', () {}),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               _buildSettingsButton('เปลี่ยนภาษา', settingsCtrl.toggleLanguage),
             ],
           ),
@@ -50,30 +45,24 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  // Large rounded button (White with Dark Gray text)
+  // Large rounded button (White with Black text)
   Widget _buildSettingsButton(String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceLight,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Colors.white, // สีขาวตาม Mockup
+          borderRadius: BorderRadius.circular(24), // มุมโค้งมน 24px ตาม Mockup
         ),
         child: Text(
           label,
+          textAlign: TextAlign.center, // จัดกลางตาม Mockup
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            fontSize: 24, // ฟอนต์ใหญ่มากตาม Mockup
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
       ),

@@ -85,15 +85,22 @@ class AIWorkspaceView extends StatelessWidget {
   }
 
   Widget _buildAvatar(String label) {
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: Colors.white,
-      child: Text(
-        label == 'User' ? 'U' : 'AI',
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          label == 'User' ? 'User' : 'AI จริ้วส',
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -101,10 +108,10 @@ class AIWorkspaceView extends StatelessWidget {
 
   Widget _buildInputBar(TextEditingController ctrl, AiController aiCtrl) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(32), // มุมโค้งมน 32px ตาม Mockup
       ),
       child: Row(
         children: [
@@ -116,6 +123,7 @@ class AIWorkspaceView extends StatelessWidget {
                 hintText: 'คุยกับ เอไอ....',
                 hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
                 border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
               ),
               onSubmitted: (v) {
                 if (v.trim().isNotEmpty) {
@@ -125,15 +133,8 @@ class AIWorkspaceView extends StatelessWidget {
               },
             ),
           ),
-          IconButton(
-            onPressed: () {
-              if (ctrl.text.trim().isNotEmpty) {
-                aiCtrl.sendMessage(ctrl.text.trim());
-                ctrl.clear();
-              }
-            },
-            icon: const Icon(Icons.send, color: Color(0xFF4CAF50)),
-          ),
+          // ซ่อนปุ่ม Send Icon ตาม Mockup (รูปไม่มีไอคอนส่ง)
+          const SizedBox(width: 8),
         ],
       ),
     );
