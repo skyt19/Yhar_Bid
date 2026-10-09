@@ -1,8 +1,10 @@
 /// lib/views/dashboard/dashboard_view.dart
+/// Dashboard — Strictly Matches assets/mockups2/หน้าเเรก.jpg
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/calendar_controller.dart';
 import '../../controllers/auth_controller.dart';
+import '../theme/app_theme.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
@@ -11,149 +13,218 @@ class DashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final calCtrl = Get.find<CalendarController>();
     final authCtrl = Get.find<AuthController>();
+    
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (authCtrl.currentUser.value == null) _buildSignInBanner(authCtrl),
-          if (authCtrl.currentUser.value == null) const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(child: _buildSummaryCard('Deadlines', '3', Icons.event, const Color(0xFF38BDF8))),
-              const SizedBox(width: 16),
-              Expanded(child: _buildSummaryCard('Tasks', '7', Icons.task_alt, const Color(0xFFF97316))),
-              const SizedBox(width: 16),
-              Expanded(child: _buildSummaryCard('AI Tips', '2', Icons.lightbulb, const Color(0xFF4FD1C5))),
-            ],
-          ),
-          const SizedBox(height: 32),
+          // 2-column grid (Left + Right)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 2, child: _buildAgendaPanel(calCtrl)),
-              const SizedBox(width: 24),
-              Expanded(flex: 1, child: _buildAIPanel()),
+              // LEFT COLUMN
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTaskCard('(task)', true),
+                    const SizedBox(height: 16),
+                    _buildIncomingWorkSection(),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              // RIGHT COLUMN
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildTaskCard('(task)', true),
+                    const SizedBox(height: 16),
+                    _buildWeekTaskCard(),
+                  ],
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 20),
+          // Bottom: Calendar API Section
+          _buildCalendarApiSection(calCtrl, authCtrl),
         ],
       ),
-    );
-  }
 
-  Widget _buildSignInBanner(AuthController authCtrl) {
+  // Task Card with Toggle (White background)
+  Widget _buildTaskCard(String title, bool toggleValue) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF4FD1C5)]),
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.cardLight,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        border: Border.all(color: AppTheme.surfaceGray, width: 2),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Icon(Icons.info_outline, color: Colors.white, size: 28),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Text(
-              'Sign in with Google to unlock AI features',
-              style: TextStyle(color: Colors.white, fontSize: 15),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(width: 16),
-          ElevatedButton.icon(
-            onPressed: () => authCtrl.signInWithGoogle(),
-            icon: const Icon(Icons.login, size: 18),
-            label: const Text('Sign In'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF38BDF8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF334155)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 28),
-              const Spacer(),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFF8FAFC),
+              const Text(
+                '(Time)',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
                 ),
               ),
+              const SizedBox(width: 8),
+              _buildToggleSwitch(toggleValue),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
         ],
       ),
     );
   }
 
-  Widget _buildAgendaPanel(CalendarController calCtrl) {
+  // Custom Toggle Switch (Green when ON, Gray when OFF)
+  Widget _buildToggleSwitch(bool value) {
     return Container(
+      width: 52,
+      height: 28,
+      decoration: BoxDecoration(
+        color: value ? AppTheme.accentPrimary : AppTheme.accentSecondary,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: AnimatedAlign(
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: 24,
+          height: 24,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+
+  // Incoming Work Section (Dark Gray Background)
+  Widget _buildIncomingWorkSection() {
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceGray,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+      child: const Center(
+        child: Text(
+          'Incoming Work\n(On Day)',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Word in Week Task Card (White + Dark Gray section)
+  Widget _buildWeekTaskCard() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceGray,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: AppTheme.cardLight,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(AppTheme.radiusMedium),
+                topRight: Radius.circular(AppTheme.radiusMedium),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'word in week (task)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Text(
+                      '(Time)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildToggleSwitch(true),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                '',
+                style: TextStyle(color: AppTheme.textDark),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Calendar API Section (Full Width Dark Gray)
+  Widget _buildCalendarApiSection(CalendarController calCtrl, AuthController authCtrl) {
+    return Container(
+      height: 300,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF334155)),
+        color: AppTheme.surfaceGray,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              const Text('This Week Agenda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF8FAFC))),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => calCtrl.fetchEvents(),
-                icon: const Icon(Icons.sync, size: 16),
-                label: const Text('Sync'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF334155),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-            ],
+          const Text(
+            'Calendar API',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Obx(() {
-            if (calCtrl.isLoading.value) {
-              return const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: Color(0xFF38BDF8))));
+            if (authCtrl.currentUser.value == null) {
+              return _buildSignInButton(authCtrl);
             }
-            if (calCtrl.events.isEmpty) {
-              return Container(padding: const EdgeInsets.all(32), decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(8)), child: const Center(child: Text('No events', style: TextStyle(color: Color(0xFF94A3B8)))));
-            }
-            return Column(
-              children: calCtrl.events.take(5).map((e) => Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(8)),
-                child: Row(children: [
-                  Container(width: 4, height: 48, decoration: BoxDecoration(color: const Color(0xFF38BDF8), borderRadius: BorderRadius.circular(2))),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(e.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFFF8FAFC))),
-                    Text('${e.startTime.day}/${e.startTime.month}', style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
-                  ])),
-                ]),
-              )).toList(),
+            return const Text(
+              'Synced',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppTheme.accentPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             );
           }),
         ],
@@ -161,37 +232,61 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildAIPanel() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF334155))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF4FD1C5)]), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.smart_toy, color: Colors.white, size: 20)),
-              const SizedBox(width: 12),
-              const Text('Yharbid AI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF8FAFC))),
+  // Sign In Button (White pill with Google icon)
+  Widget _buildSignInButton(AuthController authCtrl) {
+    return ElevatedButton.icon(
+      onPressed: () => authCtrl.signInWithGoogle(),
+      icon: Container(
+        width: 24,
+        height: 24,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF4285F4),
+              Color(0xFFEA4335),
+              Color(0xFFFBBC05),
+              Color(0xFF34A853),
             ],
           ),
-          const SizedBox(height: 16),
-          TextField(decoration: InputDecoration(hintText: 'Ask me...', hintStyle: const TextStyle(color: Color(0xFF64748B)), filled: true, fillColor: const Color(0xFF0F172A), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.send, color: Color(0xFF38BDF8))), style: const TextStyle(color: Colors.white)),
-          const SizedBox(height: 16),
-          _buildAISuggestion('Summarize meetings', Icons.calendar_today),
-          const SizedBox(height: 8),
-          _buildAISuggestion('Create checklist', Icons.checklist),
-        ],
+        ),
+        child: const Center(
+          child: Text(
+            'G',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
-    );
-  }
-
-  Widget _buildAISuggestion(String text, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(8)),
-      child: Row(children: [Icon(icon, color: const Color(0xFF94A3B8), size: 18), const SizedBox(width: 8), Text(text, style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)))]),
+      label: const Text(
+        'Sign in Google Calendar',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.textPrimary,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.surfaceLight,
+        foregroundColor: AppTheme.textPrimary,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+        ),
+        elevation: 0,
+      ),
     );
   }
 }
 
+
+        ),
+      ),
+    );
+  }
+
+    );
+  }

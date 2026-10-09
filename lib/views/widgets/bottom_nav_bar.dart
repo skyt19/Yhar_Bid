@@ -1,7 +1,6 @@
 /// lib/views/widgets/bottom_nav_bar.dart
-/// Bottom Navigation Bar — 4 ปุ่มวงกลม
+/// Bottom Navigation Bar — 4 Circular Icon Buttons (Mockup-Compliant)
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../theme/app_theme.dart';
 
 class AppBottomNavBar extends StatelessWidget {
@@ -16,87 +15,92 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<_NavItem> items = <_NavItem>[
-      _NavItem(icon: Icons.psychology_outlined, labelKey: 'ai_assistant'),
-      _NavItem(icon: Icons.calendar_month_outlined, labelKey: 'calendar'),
-      _NavItem(icon: Icons.assignment_outlined, labelKey: 'tasks_manage'),
-      _NavItem(icon: Icons.settings_outlined, labelKey: 'settings'),
-    ];
-
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundLight,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppTheme.radiusLarge),
-          topRight: Radius.circular(AppTheme.radiusLarge),
-        ),
-        boxShadow: <BoxShadow>[
+      height: 90,
+      decoration: BoxDecoration(
+        color: AppTheme.navBarBackground,
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 12,
-            offset: Offset(0, -3),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List<Widget>.generate(items.length, (int index) {
-          final bool isSelected = index == currentIndex;
-          return GestureDetector(
-            onTap: () => onTap(index),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.cardLight
-                    : AppTheme.cardLight.withValues(alpha: 0.6),
-                shape: BoxShape.circle,
-                boxShadow: isSelected
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: AppTheme.accentPrimary.withValues(alpha: 0.25),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ]
-                    : null,
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavButton(0, Icons.home, 'Home'),
+            _buildNavButton(1, _GoogleIcon(), 'Calendar'),
+            _buildNavButton(2, Icons.memory, 'AI'),
+            _buildNavButton(3, Icons.settings, 'Settings'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavButton(int index, dynamic icon, String label) {
+    final isActive = currentIndex == index;
+    return GestureDetector(
+      onTap: () => onTap(index),
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceLight,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isActive ? AppTheme.accentPrimary : Colors.transparent,
+            width: 3,
+          ),
+        ),
+        child: icon is Widget
+            ? icon
+            : Icon(
+                icon as IconData,
+                color: isActive ? AppTheme.accentPrimary : AppTheme.textPrimary,
+                size: 28,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    items[index].icon,
-                    color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
-                    size: 24,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    items[index].labelKey.tr,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
       ),
     );
   }
 }
 
-class _NavItem {
-  final IconData icon;
-  final String labelKey;
-  const _NavItem({required this.icon, required this.labelKey});
+// Custom Google "G" Icon Widget (Rainbow Colors)
+class _GoogleIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF4285F4), // Blue
+              Color(0xFFEA4335), // Red
+              Color(0xFFFBBC05), // Yellow
+              Color(0xFF34A853), // Green
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            'G',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 

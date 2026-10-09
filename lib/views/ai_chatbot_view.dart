@@ -29,7 +29,7 @@ class _AiChatbotViewState extends State<AiChatbotView> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('AI จสวีส', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('AI จาวีส', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: AppTheme.backgroundLight,
         elevation: 0,
