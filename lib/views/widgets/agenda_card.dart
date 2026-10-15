@@ -65,14 +65,14 @@ class AgendaCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentPrimary.withOpacity(0.15),
+                    color: AppTheme.accentGreen.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     preparation.contentTypeLabel.split(' ').first,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: AppTheme.accentPrimary,
+                      color: AppTheme.accentGreen,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -119,3 +119,4 @@ class AgendaCard extends StatelessWidget {
     );
   }
 }
+

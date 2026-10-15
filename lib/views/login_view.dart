@@ -16,8 +16,8 @@ class LoginView extends StatelessWidget {
     final SettingsController settingsCtrl = Get.find<SettingsController>();
 
     return Scaffold(
-      // พื้นหลัง Blue-Gray ตาม Mockup (#B0BEC5 ≈ Blue Grey 200)
-      backgroundColor: const Color(0xFFB0BEC5),
+      // พื้นหลัง Warm Gray (NO BLUE)
+      backgroundColor: const Color(0xFFE0E0E0),
       body: SafeArea(
         child: Stack(
           children: <Widget>[
@@ -61,8 +61,8 @@ class LoginView extends StatelessWidget {
                                       await authCtrl.signInWithGoogle();
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFCFD8DC), // Blue Grey 100
-                                foregroundColor: Colors.black,
+                                backgroundColor: const Color(0xFF4CAF50), // Green - NO BLUE
+                                foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 20),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(35),
@@ -127,8 +127,15 @@ class LoginView extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFCFD8DC),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         settingsCtrl.languageCode.value == 'th' ? 'TH/EN' : 'EN/TH',
@@ -147,3 +154,4 @@ class LoginView extends StatelessWidget {
     );
   }
 }
+

@@ -37,7 +37,7 @@ class AdvancedSettingsView extends StatelessWidget {
             children: <Widget>[
               // --- Section 1: การจัดการแคชและข้อมูล ---
               Text('การจัดการแคชและข้อมูล', 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentPrimary)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentGreen)),
               const SizedBox(height: 16),
               
               _buildActionTile(
@@ -73,7 +73,7 @@ class AdvancedSettingsView extends StatelessWidget {
               
               // --- Section 2: AI Settings ---
               Text('การปรับระดับ AI ช่วยจำ', 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentPrimary)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentGreen)),
               const SizedBox(height: 16),
               
               Obx(() => _buildSwitchTile(
@@ -89,7 +89,7 @@ class AdvancedSettingsView extends StatelessWidget {
               
               // --- Section 3: Account & Security ---
               Text('การตั้งค่าความปลอดภัยและบัญชี', 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentPrimary)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentGreen)),
               const SizedBox(height: 16),
               
               Obx(() => _buildInfoTile(
@@ -115,7 +115,7 @@ class AdvancedSettingsView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: <Widget>[
-            Icon(icon, color: AppTheme.accentSecondary, size: 24),
+            Icon(icon, color: AppTheme.accentGray, size: 24),
             const SizedBox(width: 16),
             Expanded(child: Text(label, style: const TextStyle(fontSize: 16, color: AppTheme.textPrimary))),
             const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
@@ -130,7 +130,7 @@ class AdvancedSettingsView extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Expanded(child: Text(label, style: const TextStyle(fontSize: 16, color: AppTheme.textPrimary))),
-        Switch(value: value, onChanged: onChanged, activeColor: AppTheme.accentPrimary),
+        Switch(value: value, onChanged: onChanged, activeColor: AppTheme.accentGreen),
       ],
     );
   }
@@ -138,7 +138,7 @@ class AdvancedSettingsView extends StatelessWidget {
   Widget _buildInfoTile({required IconData icon, required String label, required String value}) {
     return Row(
       children: <Widget>[
-        Icon(icon, color: AppTheme.accentSecondary, size: 24),
+        Icon(icon, color: AppTheme.accentGray, size: 24),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -219,7 +219,7 @@ class AdvancedSettingsView extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () => Get.back(result: true),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGreen),
                 child: Text('confirm'.tr, style: const TextStyle(color: Colors.white)),
               ),
             ],
@@ -228,4 +228,7 @@ class AdvancedSettingsView extends StatelessWidget {
         false;
   }
 }
+
+
+
 

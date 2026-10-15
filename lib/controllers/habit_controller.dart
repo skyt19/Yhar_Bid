@@ -143,4 +143,18 @@ class HabitController extends GetxController {
     );
     weeklySuccessRate.value = (total / habits.length).clamp(0.0, 1.0);
   }
+
+  /// โหลด Habits ตามบทบาทปัจจุบัน (สำหรับ SRS Test Lab)
+  void loadRoleContextualHabits() {
+    isLoading.value = true;
+    _loadSampleHabits();
+    isLoading.value = false;
+    Get.snackbar(
+      'Habits Reloaded',
+      'Role-contextual habits loaded for ${_authController.currentUser.value?.role.name ?? "user"}',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
+  }
 }
+

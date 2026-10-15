@@ -1,5 +1,5 @@
 /// lib/views/widgets/bottom_nav_bar.dart
-/// Bottom Navigation Bar — 4 Circular Icon Buttons (Mockup-Compliant 100%)
+/// Bottom Navigation Bar — 5 Circular Icon Buttons (Mockup-Compliant + Tasks Page)
 /// สีพื้น: #757575 | วงกลมปุ่ม: สีขาว | ไอคอน: สีดำ | Google G: สีรุ้ง
 import 'package:flutter/material.dart';
 
@@ -27,7 +27,8 @@ class AppBottomNavBar extends StatelessWidget {
             _buildNavButton(0, Icons.home, 'Home'),
             _buildNavButton(1, _GoogleIcon(), 'Calendar'),
             _buildNavButton(2, Icons.memory, 'AI'),
-            _buildNavButton(3, Icons.settings, 'Settings'),
+            _buildNavButton(3, Icons.task_alt, 'Tasks'),
+            _buildNavButton(4, Icons.settings, 'Settings'),
           ],
         ),
       ),
@@ -95,4 +96,5 @@ class _GoogleIcon extends StatelessWidget {
     );
   }
 }
+
 

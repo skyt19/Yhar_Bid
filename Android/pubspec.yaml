@@ -1,0 +1,60 @@
+name: yharbid_android
+description: Yharbid — Adaptive Routine & Reminder Assistant (Native Android App)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  get: ^4.6.6
+
+  # Firebase
+  firebase_core: ^2.27.0
+  cloud_firestore: ^4.15.0
+  firebase_auth: ^4.17.0
+
+  # Google Sign-In & Calendar (Android-only, removed google_sign_in_web)
+  google_sign_in: ^6.2.1
+  http: ^1.2.0
+  googleapis_auth: ^1.6.0
+
+  # Calendar Widget
+  table_calendar: ^3.1.2
+
+  # Environment Variables
+  flutter_dotenv: ^5.1.0
+
+  # Charts (Analytics Dashboard)
+  fl_chart: ^0.66.2
+
+  # Date Formatting
+  intl: 0.20.3
+
+  # Local Notifications
+  flutter_local_notifications: ^17.0.0
+
+  # Persistent Storage
+  get_storage: ^2.1.1
+
+  # Icons & Fonts
+  cupertino_icons: ^1.0.6
+  google_fonts: ^9.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/mockups/
+    - assets/icons/
+    - assets/images/

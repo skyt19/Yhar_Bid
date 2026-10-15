@@ -25,7 +25,7 @@ class AppConfig {
   /// - Gemini: https://aistudio.google.com/app/apikey
   /// - Google OAuth: https://console.cloud.google.com/apis/credentials
   static const String _FALLBACK_GEMINI_API_KEY = 
-      'AQ.Ab8RN6JFhMBDx5yyURduPJDLWV_fY6YCum3ynObdlNHS6KOdiQ';
+      'AQ.Ab8RN6K-jOMiPyueBw7S17lA1jWjhQNaTfo76DFu9dvpfRi-ig';
   
   static const String _FALLBACK_GOOGLE_CLIENT_ID = 
       '197558461101-fpvs52hlfg76po4c5bmufqotpr962hf6.apps.googleusercontent.com';

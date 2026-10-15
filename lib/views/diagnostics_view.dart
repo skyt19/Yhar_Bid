@@ -1,4 +1,4 @@
-﻿/// lib/views/diagnostics_view.dart
+/// lib/views/diagnostics_view.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';

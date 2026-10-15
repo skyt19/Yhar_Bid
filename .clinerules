@@ -1,66 +1,100 @@
-# Yharbid Project Operational Directives (.clinerules)
+# Yhar Bid — Master Operational Directives (.clinerules)
+# Strictly Aligned with Software Requirements Specification (SRS v1.1)
 
-## 1. System Identity & Mission
-- You are the Lead Software Engineer implementing the "Yharbid AI Assistant" cross-platform application.
-- All code modifications, logic structures, and directory arrangements must strictly follow this directive and the provided Software Requirements Specification (SRS).
-- High execution efficiency is strictly enforced: plan comprehensively, create/edit files in unified batches, and prevent fragmented multi-step calls to optimize per-request API costs.
-
----
-
-## 2. Architecture & Directory Boundaries (Clean Architecture)
-Follow strict Flutter Clean Architecture separation under the `lib/` directory:
-- `lib/models/`: Data entities, JSON serializable models, Firestore schema mappings.
-- `lib/services/`: Pure business logic, third-party integrations, and external API interfaces:
-  - `google_calendar_service.dart`: Handling Google OAuth 2.0 flow and Calendar REST API calls.
-  - `ai_service.dart`: Interfacing with Gemini API, role-based system prompting, and fallback templates.
-  - `notification_service.dart`: Local notifications and background trigger orchestration.
-- `lib/controllers/`: State management layer bridging Services and Views.
-- `lib/views/`: Presentation components, UI screens, widgets, and themes.
-
-*Rule: Views must never communicate directly with Services or external APIs. All data must flow through Controllers.*
-
----
-
-## 3. Core Functional & Role-Based Rules
-
-### A. Role Selection & System Prompts
-The application contains three core roles with distinct task behaviors:
-- `Student`: Detect deadline events from Calendar -> Automatically generate Task Outlines 3 days prior.
-- `Employee`: Detect upcoming meeting events -> Automatically generate Meeting Agendas / Discussion Points.
-- `Educator`: Detect teaching schedules / exams -> Automatically generate Lesson & Exam structures.
-
-### B. User Persona / AI Communication Styles
-Dynamic tone generator for short notifications (e.g., `Polite Jarvis`, `Friendly`, `Aggressive Motivator`):
-- All dynamic notification messages must remain concise, direct, and under 120 characters.
-- A deterministic offline fallback template set MUST be maintained in `lib/services/ai_service.dart` for scenarios where Gemini API calls fail or timeout.
-
-### C. Habit Tracking & Calendar Analytics
-- Data schemas in Firestore must link habit instances and calendar completions with the user's active role.
-- Weekly metric calculations (Habit Success Rate, Calendar Compliance Rate) must return aggregated float percentages.
+## 1. System Identity, Scope & Golden Thread (SRS Section 1, 2, 6, 7)
+- **Project Title:** Yhar Bid — Adaptive Routine & Reminder Assistant (Flutter Cross-Platform MVP).
+- **Core Purpose (Golden Thread - Section 7):** Different role contexts and upcoming Google Calendar events -> synchronized schedule and habit data -> proactive role-specific preparation and concise notifications -> weekly analytics feedback.
+  - FR-1 defines active role context and AI communication style preference.
+  - FR-2 provides two-way synchronized Google Calendar input/output.
+  - FR-3 generates proactive role-specific preparation from synchronized calendar events.
+  - FR-4 supplies role-contextual habit tracking and outcome persistence.
+  - FR-5 delivers style-aware concise notifications with a mandatory offline/outage fallback template.
+  - FR-6 aggregates calendar and habit outcomes into a real-time weekly Behavioral Analytics Dashboard.
+- **Explicit Out-of-Scope Boundaries (Section 2.1 & Section 6):**
+  - DO NOT implement social messaging or group chat inside the app.
+  - DO NOT implement payment, subscriptions, or monetization features.
+  - DO NOT replace Google Calendar as a full general-purpose calendar app (focus only on role-aware synchronization and preparation).
+  - DO NOT automatically change the user's role or communication preferences without explicit user control.
+  - DO NOT support any roles outside `Student`, `Corporate Employee`, and `Educator`.
+  - DO NOT add features unrelated to calendar synchronization, role-based preparation, habit tracking, notifications, or analytics.
 
 ---
 
-## 4. Engineering & Code Quality Standards
+## 2. Strict Functional Requirements Compliance (SRS Section 3 & Section 5)
+Every code modification MUST preserve and enforce all six Functional Requirements and ten Use Cases (UC-1 to UC-10):
 
-- **Strict Typing:** All Dart functions, variables, parameters, and return types must be explicitly typed (`void`, `Future<T>`, `Stream<T>`, specific classes). Do NOT use untyped `dynamic` unless parsing raw outer JSON boundaries.
-- **Error Handling Protocol:** External calls, OAuth flows, and AI requests must catch exceptions using strongly-typed custom app exceptions returning standard payload format:
-  ```dart
+### FR-1: Role-Based Onboarding & Style Selection (UC-1, UC-2)
+- **Supported Roles (Exact 3 Contexts):**
+  1. `Student`
+  2. `Corporate Employee`
+  3. `Educator`
+- **Supported AI Communication Styles (Exact 3 Tones):**
+  1. `Polite Jarvis`
+  2. `Friendly`
+  3. `Aggressive Motivator`
+- **Acceptance Criteria:**
+  1. When the user selects `Student`, `Corporate Employee`, or `Educator`, store it as the active role context in Firebase Firestore / local storage (`AuthController` / `SettingsController`).
+  2. When the user selects an AI communication style, persist it and pass it to every subsequent AI preparation and notification generation flow.
+
+### FR-2: Two-Way Google Calendar Synchronization (UC-3)
+- **Acceptance Criteria:**
+  1. **Read Sync (Google Calendar -> Yhar Bid):** Given the user grants Google Calendar access via Google OAuth 2.0, fetch authorized events via Google Calendar REST API (`GET https://www.googleapis.com/calendar/v3/calendars/primary/events`) and display them in `table_calendar` and the upcoming events list.
+  2. **Write Sync (Yhar Bid -> Google Calendar):** Given an authorized event or task is created or updated in Yhar Bid (including via the "Add Task" dialog or approving a proactive preparation), immediately execute `POST` / `PATCH` / `PUT` calls to the Google Calendar REST API so the corresponding Google Calendar event is created or updated in real time. Never strip out Google Calendar write calls from task creation flows.
+
+### FR-3: Proactive Role-Based Task Preparation (UC-4, UC-5, UC-6, UC-7)
+- **Role-Specific Preparation Rules (Triggered from synchronized calendar events):**
+  1. **UC-5 (Student):** Given a `Student` has a calendar event representing a deadline at least 3 days ahead, detect it and prepare a short **Task Outline** and actionable steps before the deadline.
+  2. **UC-6 (Corporate Employee):** Given a `Corporate Employee` has a scheduled meeting, detect it and prepare a **Meeting Agenda** or key discussion points before the meeting starts.
+  3. **UC-7 (Educator):** Given an `Educator` has a scheduled teaching session or exam, detect it and prepare a corresponding **Teaching or Exam Content Structure** before the scheduled activity.
+- **Review & Sync Workflow:** Present generated preparation to the user, allow approval/editing, sync approved items back to the Google Calendar event description (FR-2), and link actionable steps to the tracker (FR-4).
+
+### FR-4: Role-Contextual Habit Tracker (UC-8)
+- **Acceptance Criteria:**
+  1. Apply the user's selected role (`Student`, `Corporate Employee`, or `Educator`) as the active habit context when habit goals are created, loaded, or presented.
+  2. Persist recorded habit outcomes (completed/pending states and dates) in Firestore / local storage so they directly feed the FR-6 analytics calculation.
+
+### FR-5: Customized Short Notifications (UC-9)
+- **Acceptance Criteria:**
+  1. Generate notifications that are short, direct (strictly <= 120 characters), and consistent with the user's selected communication style (`Polite Jarvis`, `Friendly`, or `Aggressive Motivator`).
+  2. **Mandatory Fallback:** Given the AI generation service is unavailable, times out, or throws an error, automatically send a deterministic fallback short-notification template matching the user's role and style instead of failing the reminder flow.
+
+### FR-6: Behavioral Analytics Dashboard (UC-10)
+- **Acceptance Criteria:**
+  1. When the user opens the dashboard or analytics view, calculate and display the real **Weekly Calendar-Adherence Summary (%)** and **Weekly Habit Success Rate (%)** from actual stored calendar and habit outcome data.
+  2. When new outcomes are recorded (tasks/events synced or habits checked off) and the dashboard is refreshed, immediately recalculate and reflect the updated weekly metrics. Never use static dummy percentages.
+
+---
+
+## 3. Engineering & Architecture Requirements (SRS Section 4: NFR-1 to NFR-10)
+
+- **NFR-1 (Frontend Technology):** Use Flutter (Dart) with `table_calendar` for calendar UI and `flutter_local_notifications` for local notifications (with safe web notification/banner fallback when running on Flutter Web Port 5000).
+- **NFR-2 (Backend & Cloud):** Use Firebase Auth, Cloud Firestore, and Cloud Functions/background triggers, integrated with Google Gemini API (`gemma-4-26b-a4b-it`).
+- **NFR-3 (External Integration):** Use Google OAuth 2.0 and Google Calendar REST APIs with authorized read/write calendar scopes (`https://www.googleapis.com/auth/calendar` and `https://www.googleapis.com/auth/calendar.events`).
+- **NFR-4 (Clean Architecture):** Strictly enforce separation of concerns under `lib/`:
+  - `lib/views/`: UI screens and widgets (strictly adhering to visual themes in `assets/mockups`). Views must NEVER call services or external APIs directly; all state and actions must pass through Controllers.
+  - `lib/controllers/`: State management bridging Views and Services.
+  - `lib/services/`: Business logic and external integrations, explicitly including `google_calendar_service.dart`, `ai_service.dart`, `auth_service.dart`, and `notification_service.dart`.
+  - `lib/models/`: Strongly-typed data models and JSON/Firestore serialization.
+- **NFR-5 (Authentication & Security):** NEVER hardcode OAuth Client Secrets or API keys in source code. Load all secrets exclusively from `.env` (`flutter_dotenv`) or Firebase Secret Manager.
+  - *Critical Rule:* Read `GEMINI_API_KEY` from `.env` exactly as written (`AQ.Ab8RN6JFhMBDx5yyURduPJDLWV_fY6YCum3ynObdlNHS6KOdiQ`). NEVER prepend `"AIzaSy"` or mutate the key string.
+- **NFR-6 (Background Sync & Proactive Scheduler):** Maintain a background/periodic scheduler mechanism (and an on-demand trigger for testing) that scans Google Calendar events and triggers FR-3 proactive preparation before relevant activities.
+- **NFR-7 (AI Fallback & Availability):** Maintain a complete, deterministic fallback short-notification template map in `lib/services/ai_service.dart` and `lib/services/notification_service.dart` so reminders always succeed even when the AI API is offline or disabled.
+- **NFR-8 (Standard Error Handling):** All application services must use custom exception classes (`lib/core/exceptions/app_exceptions.dart`) and return/map errors to the exact standard JSON error schema:
+  ```json
   {
     "status": false,
-    "message": "Localized error message",
+    "message": "...",
     "data": null
   }
-- **Security & Secrets:** Absolute zero tolerance for hardcoded API keys, OAuth Client Secrets, or Firebase Service Account credentials. Read configurations exclusively via .env (using flutter_dotenv) or platform environment configurations. Read configurations exclusively via .env (using flutter_dotenv) or platform environment configurations. Automatically append .env*, google-services.json, and GoogleService-Info.plist to .gitignore. In-Code Documentation: Use Thai comments/docstrings for complex business logic, especially for the role-based prompt selection matrix in ai_service.dart.
+- **NFR-9 (Coding Style & Thai Documentation):** Enforce strong typing (explicit type annotations for all variables, parameters, and return types; avoid dynamic). Provide clear docstrings and inline comments for all logic. All role-based prompting logic and communication style adaptation in lib/services/ai_service.dart MUST be documented in Thai.
 
-## 5. Development Workflow & Cost-Optimization Policy
-- **Batch Execution:** Write complete, production-ready code with full implementations. Never use placeholder comments like // TODO: implement later or create empty skeleton files that require a subsequent request to fill in.
+- **NFR-10 (Module Scope Discipline):** Do not break, delete, or corrupt unrelated modules or existing working features when modifying a specific feature. Preserve all assets in assets/ and assets/mockups/.
 
-- **Scope Isolation:** Modify only the files directly tied to the current task. Do not reformat or alter unrelated components.
+## 4. Operational & Tooling Safeguards (Zero-Breakage Policy)
+- **NO EMOJIS:** Do not output or insert emojis anywhere in Dart source files, UI labels, comments, or logs. Use standard Flutter Icons only.
 
-- **Commit Standards:** Structure Git commits following the Conventional Commits specification:
+- **NATIVE FILE TOOLS ONLY:** Never use PowerShell (Set-Content, Out-File, echo) or Python scripts to write or modify .dart files. Use only native IDE file editing tools (write_to_file / replace_in_file) to preserve UTF-8 Thai encoding and bracket balance.
 
-- **feat(calendar):** implement two-way sync with Google Calendar API
+- **SAFE GETX & FLUTTER LAYOUTS:** Every Obx(() => ...) widget must directly read at least one .obs variable inside its immediate closure. Always constrain ListView or Column widgets inside scrollable parents using Expanded or shrinkWrap: true with NeverScrollableScrollPhysics().
 
-- **feat(ai):** add role-based prompt engine with offline fallback
-
-- **fix(auth):** handle token refresh expiration gracefully
+- **MANDATORY VERIFICATION BEFORE COMPLETION:**Every task must conclude by running flutter analyze --no-pub and resolving all compilation errors (0 errors required). Run flutter build web --release to ensure the Port 5000 web application bundle is always up to date and functional.

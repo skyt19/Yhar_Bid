@@ -12,7 +12,7 @@ import 'firebase_options.dart';
 import 'translations/app_translations.dart';
 import 'views/theme/app_theme.dart';
 import 'views/login_view.dart';
-import 'views/main_dashboard_view.dart';
+// import 'views/main_dashboard_view.dart'; // Deprecated - ใช้ MainLayoutView แทน
 import 'views/ai_chatbot_view.dart';
 import 'views/calendar_view.dart';
 import 'views/settings_view.dart';
@@ -25,12 +25,16 @@ import 'views/habit_tracker_view.dart';
 import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
 import 'views/main_layout_view.dart';
+import 'views/srs_test_lab_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
+import 'controllers/navigation_controller.dart';
 import 'controllers/calendar_controller.dart';
 import 'controllers/task_controller.dart';
 import 'controllers/ai_controller.dart';
 import 'controllers/habit_controller.dart';
+import 'controllers/proactive_controller.dart';
+import 'controllers/analytics_controller.dart';
 import 'core/config/app_config.dart';
 
 Future<void> main() async {
@@ -103,12 +107,15 @@ Future<void> main() async {
   // STEP 7: Dependency Injection (GetX Controllers)
   // ============================================
   try {
-    Get.put<SettingsController>(SettingsController());
-    Get.put<AuthController>(AuthController());
-    Get.put<CalendarController>(CalendarController());
-    Get.put<TaskController>(TaskController());
-    Get.put<AiController>(AiController());
-    Get.put<HabitController>(HabitController());
+    Get.put<SettingsController>(SettingsController(), permanent: true);
+    Get.put<AuthController>(AuthController(), permanent: true);
+    Get.put<NavigationController>(NavigationController(), permanent: true);
+    Get.put<CalendarController>(CalendarController(), permanent: true);
+    Get.put<TaskController>(TaskController(), permanent: true);
+    Get.put<AiController>(AiController(), permanent: true);
+    Get.put<HabitController>(HabitController(), permanent: true);
+    Get.put<ProactiveController>(ProactiveController(), permanent: true);
+    Get.put<AnalyticsController>(AnalyticsController(), permanent: true);
     debugPrint('✅ [Main] All controllers registered');
   } catch (e) {
     debugPrint('⚠️ [Main] Controller registration error: $e');
@@ -145,7 +152,7 @@ class YharbidApp extends StatelessWidget {
         GetPage(name: AppRoutes.login, page: () => const LoginView()),
         GetPage(name: AppRoutes.roleSelection, page: () => const RoleSelectionView()),
         GetPage(name: AppRoutes.aiPersonality, page: () => const AiPersonalityView()),
-        GetPage(name: AppRoutes.dashboard, page: () => const MainDashboardView()),
+        GetPage(name: AppRoutes.dashboard, page: () => const MainLayoutView()), // ✅ ใช้ MainLayoutView แทน MainDashboardView
         GetPage(name: AppRoutes.aiChatbot, page: () => const AiChatbotView()),
         GetPage(name: AppRoutes.calendar, page: () => const CalendarView()),
         GetPage(name: AppRoutes.settings, page: () => const SettingsView()),
@@ -155,6 +162,7 @@ class YharbidApp extends StatelessWidget {
         GetPage(name: AppRoutes.habitTracker, page: () => const HabitTrackerView()),
         GetPage(name: AppRoutes.analytics, page: () => const AnalyticsDashboardView()),
         GetPage(name: AppRoutes.notificationSettings, page: () => const NotificationSettingsView()),
+        GetPage(name: AppRoutes.srsTestLab, page: () => const SrsTestLabView()),
       ],
     );
   }
@@ -179,7 +187,9 @@ class AppRoutes {
   static const String habitTracker = '/habit-tracker';
   static const String analytics = '/analytics';
   static const String notificationSettings = '/notification-settings';
+  static const String srsTestLab = '/srs-test-lab';
 }
+
 
 class ServiceTestView extends StatelessWidget {
   const ServiceTestView({super.key});
@@ -189,7 +199,7 @@ class ServiceTestView extends StatelessWidget {
     final CalendarController calCtrl = Get.find<CalendarController>();
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(title: const Text('Service Test'), centerTitle: true, backgroundColor: AppTheme.accentPrimary, foregroundColor: Colors.white),
+      appBar: AppBar(title: const Text('Service Test'), centerTitle: true, backgroundColor: AppTheme.accentGreen, foregroundColor: Colors.white),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -199,13 +209,13 @@ class ServiceTestView extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: authCtrl.isLoading.value ? null : () async => await authCtrl.signInWithGoogle(),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGreen, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
               child: const Text('Sign in with Google'),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: calCtrl.isLoading.value ? null : () async => await calCtrl.fetchEvents(),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentSecondary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGray, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
               child: const Text('Sync Calendar'),
             ),
             const SizedBox(height: 12),
@@ -225,7 +235,7 @@ class ServiceTestView extends StatelessWidget {
                           itemCount: calCtrl.events.length,
                           itemBuilder: (BuildContext ctx, int i) {
                             final event = calCtrl.events[i];
-                            return ListTile(leading: const Icon(Icons.event, color: AppTheme.accentPrimary), title: Text(event.title), subtitle: Text('${event.startTime.day}/${event.startTime.month}'));
+                            return ListTile(leading: const Icon(Icons.event, color: AppTheme.accentGreen), title: Text(event.title), subtitle: Text('${event.startTime.day}/${event.startTime.month}'));
                           },
                         ),
                 )),
@@ -235,4 +245,6 @@ class ServiceTestView extends StatelessWidget {
     );
   }
 }
+
+
 

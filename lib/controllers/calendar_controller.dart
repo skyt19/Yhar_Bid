@@ -1,10 +1,13 @@
 /// lib/controllers/calendar_controller.dart
 /// Controller จัดการ Google Calendar State — เชื่อมต่อ GoogleCalendarService กับ Views
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/calendar_event_model.dart';
 import '../services/google_calendar_service.dart';
 import '../services/auth_service.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/proactive_controller.dart';
+import '../controllers/analytics_controller.dart';
 
 class CalendarController extends GetxController {
   final GoogleCalendarService _calendarService = GoogleCalendarService();
@@ -25,13 +28,35 @@ class CalendarController extends GetxController {
     errorMessage.value = '';
     calendarConnectionStatus.value = 'กำลังเชื่อมต่อ Google Calendar...';
 
-    final String? token = await _authService.getAccessToken();
+    // ตรวจสอบ Token ก่อน — ถ้าไม่มีให้ขอใหม่
+    String? token = await _authService.getAccessToken();
     if (token == null || token.isEmpty) {
-      errorMessage.value = 'กรุณาเข้าสู่ระบบก่อนใช้งาน Calendar';
-      calendarConnectionStatus.value = 'ไม่มี Access Token';
-      isCalendarConnected.value = false;
-      isLoading.value = false;
-      return;
+      calendarConnectionStatus.value = 'กำลังขอสิทธิ์ Calendar...';
+      final bool granted = await _authService.requestCalendarScope();
+      if (!granted) {
+        errorMessage.value = 'กรุณาอนุญาตการเข้าถึง Google Calendar';
+        calendarConnectionStatus.value = 'ผู้ใช้ปฏิเสธการให้สิทธิ์';
+        isCalendarConnected.value = false;
+        isLoading.value = false;
+        Get.snackbar(
+          '⚠️ ต้องการสิทธิ์ Calendar',
+          'กรุณาอนุญาตให้แอปเข้าถึง Google Calendar',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFFF9800),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+      // ลองดึง Token อีกครั้งหลังจากขอสิทธิ์
+      token = await _authService.getAccessToken();
+      if (token == null || token.isEmpty) {
+        errorMessage.value = 'ไม่สามารถรับ Access Token ได้';
+        calendarConnectionStatus.value = 'Token Error';
+        isCalendarConnected.value = false;
+        isLoading.value = false;
+        return;
+      }
     }
 
     final CalendarServiceResponse response = await _calendarService.fetchUpcomingEvents(token);
@@ -142,4 +167,97 @@ class CalendarController extends GetxController {
     selectedDay.value = day;
     focusedDay.value = focused;
   }
+
+  /// Create Sample Role-Based Events for Testing (FR-2: Two-Way Write Sync)
+  /// ตาม SRS Section 3: "Seed Real Test Events Button"
+  Future<void> createSampleRoleEvents() async {
+    try {
+      isLoading.value = true;
+      
+      final AuthController authCtrl = Get.find<AuthController>();
+      final user = authCtrl.currentUser.value;
+      if (user == null) {
+        Get.snackbar('Error', 'Please sign in first', snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+      
+      // สร้าง 3 Events ตาม Role
+      final List<Map<String, dynamic>> roleEvents = [];
+      
+      // Student Event: Deadline 3 days ahead
+      roleEvents.add({
+        'title': 'Software Engineering - Final Project Deadline',
+        'description': 'Submit complete SRS document and UML diagrams',
+        'startTime': DateTime.now().add(const Duration(days: 3, hours: 23, minutes: 59)),
+        'endTime': DateTime.now().add(const Duration(days: 4)),
+        'isAllDay': false,
+      });
+      
+      // Corporate Employee Event: Meeting tomorrow
+      roleEvents.add({
+        'title': 'Q4 Strategy Meeting',
+        'description': 'Discuss annual targets and departmental KPIs',
+        'startTime': DateTime.now().add(const Duration(days: 1, hours: 14)),
+        'endTime': DateTime.now().add(const Duration(days: 1, hours: 16)),
+        'isAllDay': false,
+      });
+      
+      // Educator Event: Teaching session in 2 days
+      roleEvents.add({
+        'title': 'Introduction to AI - Lecture 8',
+        'description': 'Neural Networks and Deep Learning fundamentals',
+        'startTime': DateTime.now().add(const Duration(days: 2, hours: 9)),
+        'endTime': DateTime.now().add(const Duration(days: 2, hours: 12)),
+        'isAllDay': false,
+      });
+      
+      int successCount = 0;
+      for (final eventData in roleEvents) {
+        final success = await createEvent(
+          title: eventData['title'] as String,
+          startTime: eventData['startTime'] as DateTime,
+          endTime: eventData['endTime'] as DateTime,
+          description: eventData['description'] as String,
+          isAllDay: eventData['isAllDay'] as bool,
+        );
+        if (success) successCount++;
+      }
+      
+      await fetchEvents(); // Refresh to show new events
+      
+      // FR-3: Trigger Proactive Scan after creating events
+      try {
+        final ProactiveController proactiveCtrl = Get.find<ProactiveController>();
+        await proactiveCtrl.runProactiveScan();
+      } catch (e) {
+        debugPrint('⚠️ Proactive Controller not found: $e');
+      }
+
+      // FR-6: Recalculate Analytics
+      try {
+        final AnalyticsController analyticsCtrl = Get.find<AnalyticsController>();
+        await analyticsCtrl.recalculateMetrics();
+      } catch (e) {
+        debugPrint('⚠️ Analytics Controller not found: $e');
+      }
+      
+      Get.snackbar(
+        'Sample Events Created',
+        'Created $successCount role-based events (FR-2 Write Sync + FR-3 Scan)',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to create sample events: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }
+

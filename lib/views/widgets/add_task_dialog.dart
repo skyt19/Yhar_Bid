@@ -80,7 +80,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
   Future<void> _saveTask() async {
     if (_titleController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'กรุณากรอกชื่องาน', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Error', 'กรุณากรอกชื่องาน', 
+        snackPosition: SnackPosition.TOP, 
+        margin: const EdgeInsets.all(16),
+        backgroundColor: const Color(0xFFB71C1C),
+        colorText: Colors.white);
       return;
     }
 
@@ -99,11 +103,16 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       dueDate: dueDate,
-      category: _priority,
+      category: 'Personal',
+      priority: _priority,
     );
 
     if (!taskSuccess) {
-      Get.snackbar('Error', 'ไม่สามารถบันทึกงานได้', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Error', 'ไม่สามารถบันทึกงานได้', 
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+        backgroundColor: const Color(0xFFB71C1C),
+        colorText: Colors.white);
       return;
     }
 
@@ -270,7 +279,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   onSelected: (bool selected) {
                     if (selected) setState(() => _priority = p);
                   },
-                  selectedColor: AppTheme.accentPrimary,
+                  selectedColor: AppTheme.accentGreen,
                   labelStyle: TextStyle(color: isSelected ? Colors.white : AppTheme.textPrimary),
                 );
               })
@@ -279,7 +288,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         const SizedBox(height: 16),
         CheckboxListTile(title: const Text('Add to Google Calendar'), value: _syncToCalendar, onChanged: (bool? value) => setState(() => _syncToCalendar = value ?? false), controlAffinity: ListTileControlAffinity.leading, contentPadding: EdgeInsets.zero),
         const SizedBox(height: 20),
-        SizedBox(width: double.infinity, child: ElevatedButton(onPressed: _saveTask, style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentPrimary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)), child: const Text('Save Task', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
+        SizedBox(width: double.infinity, child: ElevatedButton(onPressed: _saveTask, style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGreen, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)), child: const Text('Save Task', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))),
       ],
     );
   }

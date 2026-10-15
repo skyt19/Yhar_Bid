@@ -47,3 +47,5 @@ ios/Flutter/.last_build_id
 ios/Pods/
 ios/Runner.xcworkspace/xcshareddata/
 ios/Runner/GoogleService-Info.plist
+# Widget Preview related
+.widget_preview/

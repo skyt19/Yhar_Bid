@@ -75,13 +75,13 @@ class _RoleSelectionViewState extends State<RoleSelectionView> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.accentPrimary.withOpacity(0.12) : AppTheme.cardLight,
+          color: isSelected ? AppTheme.accentGreen.withOpacity(0.12) : AppTheme.cardLight,
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: isSelected ? AppTheme.accentPrimary : Colors.transparent, width: 2),
+          border: Border.all(color: isSelected ? AppTheme.accentGreen : Colors.transparent, width: 2),
         ),
         child: Row(
           children: <Widget>[
-            Icon(icon, size: 32, color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary),
+            Icon(icon, size: 32, color: isSelected ? AppTheme.accentGreen : AppTheme.textPrimary),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -93,10 +93,11 @@ class _RoleSelectionViewState extends State<RoleSelectionView> {
                 ],
               ),
             ),
-            if (isSelected) const Icon(Icons.check_circle, color: AppTheme.accentPrimary),
+            if (isSelected) const Icon(Icons.check_circle, color: AppTheme.accentGreen),
           ],
         ),
       ),
     );
   }
 }
+
