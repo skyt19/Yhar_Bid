@@ -1,31 +1,33 @@
 /// lib/views/theme/app_theme.dart
-/// Design System Engine — Strictly Based on assets/mockups2/
-/// ✅ 100% Mockup Compliance with Mobile-First Bottom Nav Design
+/// Design System Engine — Strictly Based on assets/mockups/
+/// ✅ 100% Mockup Compliance - NO BLUE COLORS
 
 import 'package:flutter/material.dart';
 
 class AppTheme {
   AppTheme._();
 
-  // ======== PRIMARY COLORS (Extracted from mockups2/) ========
-  static const Color backgroundLight = Color(0xFFB8C5D0);       // Main BG: Light blue-gray
-  static const Color backgroundDark = Color(0xFF607D8B);        // Dark mode variant
+  // ======== PRIMARY COLORS (NO BLUE - Warm Gray Theme) ========
+  static const Color backgroundLight = Color(0xFFF5F5F5);       // Main BG: Warm light gray (NOT blue-gray)
+  static const Color backgroundDark = Color(0xFF424242);        // Dark mode variant (pure gray)
   static const Color surfaceLight = Color(0xFFFFFFFF);          // White cards/surfaces
-  static const Color surfaceDark = Color(0xFF263238);           // Dark mode surfaces
-  static const Color surfaceGray = Color(0xFF6B7280);           // Dark gray containers (Calendar API, Incoming Work sections)
-  static const Color cardLight = Color(0xFFFFFFFF);             // White task cards
-  static const Color cardDark = Color(0xFF455A64);              // Dark mode cards
+  static const Color surfaceDark = Color(0xFF303030);           // Dark mode surfaces
+  static const Color surfaceGray = Color(0xFF757575);           // Gray containers (bottom nav bar)
+  static const Color cardLight = Color(0xFFFFFFFF);             // White cards
+  static const Color cardDark = Color(0xFF424242);              // Dark mode cards
   
   // ======== TEXT COLORS ========
   static const Color textPrimary = Color(0xFF000000);           // Black headers
-  static const Color textSecondary = Color(0xFF4B5563);         // Gray body text
+  static const Color textSecondary = Color(0xFF616161);         // Gray body text
   static const Color textDark = Color(0xFFFFFFFF);              // White text on dark backgrounds
   
-  // ======== ACCENT/ACTION COLORS ========
-  static const Color accentPrimary = Color(0xFF10B981);         // Green toggle ON state
-  static const Color accentSecondary = Color(0xFF9CA3AF);       // Gray toggle OFF state
-  static const Color buttonDark = Color(0xFF6B7280);            // Settings pill buttons
-  static const Color navBarBackground = Color(0xFF4B5563);      // Bottom nav bar dark gray
+  // ======== ACCENT/ACTION COLORS (NO BLUE!) ========
+  static const Color accentGreen = Color(0xFF4CAF50);           // Green - primary action (from mockup)
+  static const Color accentOrange = Color(0xFFFF9800);          // Orange - warnings
+  static const Color accentRed = Color(0xFFF44336);             // Red - danger/delete
+  static const Color accentGray = Color(0xFF9E9E9E);            // Gray - secondary actions
+  static const Color buttonDark = Color(0xFF757575);            // Settings pill buttons
+  static const Color navBarBackground = Color(0xFF757575);      // Bottom nav bar dark gray (from mockup)
   
   static const Color dividerColor = Color(0xFFE0E0E0);          // Light gray dividers
 
@@ -62,7 +64,7 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: buttonDark,
+        backgroundColor: accentGreen,  // Changed from buttonDark
         foregroundColor: textDark,
         elevation: 0,
         shape: RoundedRectangleBorder(

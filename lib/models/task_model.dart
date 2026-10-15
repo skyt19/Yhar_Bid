@@ -10,6 +10,9 @@ class TaskModel {
   final DateTime createdAt;
   final DateTime? dueDate;
   final String? category;
+  final String priority;
+  final DateTime? firstDownloadedAt;
+  final String? fileUrl;
   
   const TaskModel({
     required this.id,
@@ -19,7 +22,19 @@ class TaskModel {
     required this.createdAt,
     this.dueDate,
     this.category,
+    this.priority = 'Medium',
+    this.firstDownloadedAt,
+    this.fileUrl,
   });
+  
+  DateTime get expiresAt {
+    if (firstDownloadedAt != null) {
+      return firstDownloadedAt!.add(const Duration(hours: 48));
+    }
+    return createdAt.add(const Duration(days: 7));
+  }
+  
+  bool get isFileExpired => DateTime.now().isAfter(expiresAt);
   
   factory TaskModel.fromFirestore(Map<String, dynamic> data, String id) {
     return TaskModel(
@@ -30,6 +45,9 @@ class TaskModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       dueDate: (data['dueDate'] as Timestamp?)?.toDate(),
       category: data['category'],
+      priority: data['priority'] ?? 'Medium',
+      firstDownloadedAt: (data['firstDownloadedAt'] as Timestamp?)?.toDate(),
+      fileUrl: data['fileUrl'],
     );
   }
   
@@ -41,6 +59,9 @@ class TaskModel {
       'createdAt': Timestamp.fromDate(createdAt),
       if (dueDate != null) 'dueDate': Timestamp.fromDate(dueDate!),
       if (category != null) 'category': category,
+      'priority': priority,
+      if (firstDownloadedAt != null) 'firstDownloadedAt': Timestamp.fromDate(firstDownloadedAt!),
+      if (fileUrl != null) 'fileUrl': fileUrl,
     };
   }
   
@@ -52,6 +73,9 @@ class TaskModel {
     DateTime? createdAt,
     DateTime? dueDate,
     String? category,
+    String? priority,
+    DateTime? firstDownloadedAt,
+    String? fileUrl,
   }) {
     return TaskModel(
       id: id ?? this.id,
@@ -61,6 +85,9 @@ class TaskModel {
       createdAt: createdAt ?? this.createdAt,
       dueDate: dueDate ?? this.dueDate,
       category: category ?? this.category,
+      priority: priority ?? this.priority,
+      firstDownloadedAt: firstDownloadedAt ?? this.firstDownloadedAt,
+      fileUrl: fileUrl ?? this.fileUrl,
     );
   }
 }

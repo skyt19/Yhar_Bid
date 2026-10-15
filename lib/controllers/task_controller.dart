@@ -1,9 +1,11 @@
 /// lib/controllers/task_controller.dart
 /// Task Management Controller — จัดการงานและ Projects
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task_model.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/analytics_controller.dart';
 
 class TaskController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -12,6 +14,21 @@ class TaskController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
   
+  // Task Filtering State (FR-4 Task Management)
+  final RxString selectedFilter = 'all'.obs; // 'all', 'pending', 'completed'
+  
+  /// Computed filtered tasks based on selectedFilter
+  List<TaskModel> get filteredTasks {
+    switch (selectedFilter.value) {
+      case 'pending':
+        return tasks.where((TaskModel t) => !t.isDone).toList();
+      case 'completed':
+        return tasks.where((TaskModel t) => t.isDone).toList();
+      case 'all':
+      default:
+        return tasks.toList();
+    }
+  }
 
   /// ดึงรายการงานจาก Firestore
   Future<void> fetchTasks() async {
@@ -49,6 +66,7 @@ class TaskController extends GetxController {
     String? description,
     DateTime? dueDate,
     String? category,
+    String? priority,
   }) async {
     final AuthController authCtrl = Get.find<AuthController>();
     final user = authCtrl.currentUser.value;
@@ -69,6 +87,7 @@ class TaskController extends GetxController {
         createdAt: DateTime.now(),
         dueDate: dueDate,
         category: category,
+        priority: priority ?? 'Medium',
       );
       
       await _firestore
@@ -110,8 +129,61 @@ class TaskController extends GetxController {
         tasks[index] = task.copyWith(isDone: !task.isDone);
         tasks.refresh();
       }
+      
+      // FR-6: Trigger analytics recalculation when task status changes
+      try {
+        final analyticsCtrl = Get.find<AnalyticsController>();
+        await analyticsCtrl.recalculateMetrics();
+      } catch (_) {
+        // AnalyticsController may not be initialized yet
+      }
     } catch (e) {
       Get.snackbar('ข้อผิดพลาด', 'ไม่สามารถอัปเดตสถานะได้: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+  
+  /// ดาวน์โหลดโครงร่างงานเป็นไฟล์ .md (Markdown File Download)
+  /// Starts 48-hour countdown timer by setting firstDownloadedAt
+  Future<void> downloadTaskOutline(TaskModel task) async {
+    final AuthController authCtrl = Get.find<AuthController>();
+    final user = authCtrl.currentUser.value;
+    if (user == null) return;
+    
+    try {
+      // Update firstDownloadedAt to start 48-hour countdown
+      if (task.firstDownloadedAt == null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('tasks')
+            .doc(task.id)
+            .update({'firstDownloadedAt': Timestamp.fromDate(DateTime.now())});
+        
+        final int index = tasks.indexWhere((TaskModel t) => t.id == task.id);
+        if (index != -1) {
+          tasks[index] = task.copyWith(firstDownloadedAt: DateTime.now());
+          tasks.refresh();
+        }
+        
+        Get.snackbar(
+          'ดาวน์โหลดสำเร็จ',
+          'เริ่มนับถอยหลัง 48 ชั่วโมง',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFF4CAF50),
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'แสดงโครงร่าง',
+          'คัดลอกเนื้อหาได้จากหน้าต่างที่แสดง',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFF4CAF50),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar('ข้อผิดพลาด', 'ไม่สามารถดาวน์โหลดได้: $e',
           snackPosition: SnackPosition.BOTTOM);
     }
   }

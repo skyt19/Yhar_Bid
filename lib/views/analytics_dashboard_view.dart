@@ -42,9 +42,9 @@ class AnalyticsDashboardView extends StatelessWidget {
                   const Text('ความสำเร็จด้านนิสัยและ Calendar', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
                   const SizedBox(height: 24),
                   Row(children: <Widget>[
-                    Expanded(child: _rateCard('Habit Success', hr, AppTheme.accentSecondary, Icons.track_changes)),
+                    Expanded(child: _rateCard('Habit Success', hr, AppTheme.accentGray, Icons.track_changes)),
                     const SizedBox(width: 12),
-                    Expanded(child: _rateCard('Calendar Compliance', cr, AppTheme.accentPrimary, Icons.event_available)),
+                    Expanded(child: _rateCard('Calendar Compliance', cr, AppTheme.accentGreen, Icons.event_available)),
                   ]),
                   const SizedBox(height: 24),
                   const Text('Chart รายสัปดาห์', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -93,8 +93,8 @@ class AnalyticsDashboardView extends StatelessWidget {
       alignment: BarChartAlignment.spaceAround,
       maxY: 1.0,
       barGroups: <BarChartGroupData>[
-        BarChartGroupData(x: 0, barRods: <BarChartRodData>[rod(hr, AppTheme.accentSecondary)]),
-        BarChartGroupData(x: 1, barRods: <BarChartRodData>[rod(cr, AppTheme.accentPrimary)]),
+        BarChartGroupData(x: 0, barRods: <BarChartRodData>[rod(hr, AppTheme.accentGray)]),
+        BarChartGroupData(x: 1, barRods: <BarChartRodData>[rod(cr, AppTheme.accentGreen)]),
       ],
       titlesData: FlTitlesData(
         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (double v, TitleMeta m) => Text('${(v * 100).toInt()}%', style: const TextStyle(fontSize: 11)))),
@@ -114,3 +114,4 @@ class AnalyticsDashboardView extends StatelessWidget {
         ]),
       );
 }
+

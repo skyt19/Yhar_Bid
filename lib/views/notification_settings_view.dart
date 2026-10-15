@@ -1,8 +1,11 @@
 /// lib/views/notification_settings_view.dart
-/// [Extrapolate SRS FR-5] — Notification Preview & Settings
+/// Enhanced: Test Notification Button (FR-5)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/settings_controller.dart';
+import '../controllers/calendar_controller.dart';
+import '../controllers/auth_controller.dart';
+import '../services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 class NotificationSettingsView extends StatelessWidget {
@@ -41,7 +44,7 @@ class NotificationSettingsView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       const Text('ระดับ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(settingsCtrl.personalityLabel, style: const TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
+                      Text(settingsCtrl.personalityLabel, style: const TextStyle(color: AppTheme.accentGreen, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   Slider(
@@ -54,7 +57,7 @@ class NotificationSettingsView extends StatelessWidget {
                         ? Colors.red
                         : settingsCtrl.aiAggressionLevel.value == 1
                             ? Colors.orange
-                            : AppTheme.accentPrimary,
+                            : AppTheme.accentGreen,
                     onChanged: (double val) => settingsCtrl.setAiAggressionLevel(val.round()),
                   ),
                   Row(
@@ -78,14 +81,14 @@ class NotificationSettingsView extends StatelessWidget {
                           ? Colors.red.withOpacity(0.1)
                           : settingsCtrl.aiAggressionLevel.value == 1
                               ? Colors.orange.withOpacity(0.1)
-                              : AppTheme.accentPrimary.withOpacity(0.1),
+                              : AppTheme.accentGreen.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: settingsCtrl.aiAggressionLevel.value == 2
                             ? Colors.red.withOpacity(0.3)
                             : settingsCtrl.aiAggressionLevel.value == 1
                                 ? Colors.orange.withOpacity(0.3)
-                                : AppTheme.accentPrimary.withOpacity(0.3),
+                                : AppTheme.accentGreen.withOpacity(0.3),
                       ),
                     ),
                     child: Text(settingsCtrl.notificationPreviewTh, style: const TextStyle(fontSize: 16, height: 1.5)),
@@ -110,9 +113,56 @@ class NotificationSettingsView extends StatelessWidget {
                       Switch(
                         value: settingsCtrl.notificationsEnabled.value,
                         onChanged: (bool val) => settingsCtrl.notificationsEnabled.value = val,
-                        activeColor: AppTheme.accentPrimary,
+                        activeColor: AppTheme.accentGreen,
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ปุ่มทดสอบส่งการแจ้งเตือนจริง (FR-5)
+                  const Text('ทดสอบการแจ้งเตือน', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final CalendarController calCtrl = Get.find<CalendarController>();
+                      final AuthController authCtrl = Get.find<AuthController>();
+                      final NotificationService notifService = NotificationService();
+                      
+                      // ดึง Event ถัดไปจาก Calendar
+                      final upcoming = calCtrl.events
+                          .where((e) => e.startTime.isAfter(DateTime.now()))
+                          .toList()..sort((a, b) => a.startTime.compareTo(b.startTime));
+                      
+                      if (upcoming.isEmpty) {
+                        Get.snackbar('แจ้งเตือน', 'ไม่มีกิจกรรมในปฏิทินเพื่อทดสอบ',
+                            snackPosition: SnackPosition.BOTTOM);
+                        return;
+                      }
+                      
+                      final user = authCtrl.currentUser.value;
+                      if (user == null) return;
+                      
+                      // ส่ง Test Notification
+                      await notifService.initialize();
+                      final result = await notifService.sendTestNotification(
+                        user.role,
+                        user.personality,
+                      );
+                      
+                      Get.snackbar(
+                        'ทดสอบแจ้งเตือน',
+                        result.message,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    },
+                    icon: const Icon(Icons.notification_important),
+                    label: const Text('ทดสอบส่งการแจ้งเตือนจากงานถัดไป'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: AppTheme.accentGray,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ],
               );
@@ -123,3 +173,4 @@ class NotificationSettingsView extends StatelessWidget {
     );
   }
 }
+

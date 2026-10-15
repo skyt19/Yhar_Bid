@@ -47,10 +47,10 @@ class HabitCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: completedToday ? AppTheme.accentSecondary : AppTheme.cardLight,
+                  color: completedToday ? AppTheme.accentGray : AppTheme.cardLight,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: completedToday ? AppTheme.accentSecondary : AppTheme.cardLight,
+                    color: completedToday ? AppTheme.accentGray : AppTheme.cardLight,
                     width: 2,
                   ),
                 ),
@@ -92,7 +92,7 @@ class HabitCard extends StatelessWidget {
                       value: rate,
                       backgroundColor: AppTheme.cardLight,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        completedToday ? AppTheme.accentSecondary : AppTheme.accentPrimary,
+                        completedToday ? AppTheme.accentGray : AppTheme.accentGreen,
                       ),
                       minHeight: 6,
                     ),
@@ -111,3 +111,4 @@ class HabitCard extends StatelessWidget {
     );
   }
 }
+

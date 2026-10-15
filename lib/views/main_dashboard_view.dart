@@ -84,14 +84,14 @@ class _MainDashboardViewState extends State<MainDashboardView> {
               decoration: BoxDecoration(
                 color: isSelected ? AppTheme.cardLight : AppTheme.cardLight.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
-                boxShadow: isSelected ? <BoxShadow>[BoxShadow(color: AppTheme.accentPrimary.withValues(alpha: 0.25), blurRadius: 8, spreadRadius: 2)] : null,
+                boxShadow: isSelected ? <BoxShadow>[BoxShadow(color: AppTheme.accentGreen.withValues(alpha: 0.25), blurRadius: 8, spreadRadius: 2)] : null,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(items[index].icon, color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary, size: 24),
+                  Icon(items[index].icon, color: isSelected ? AppTheme.accentGreen : AppTheme.textPrimary, size: 24),
                   const SizedBox(height: 4),
-                  Text(items[index].labelKey.tr, style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(items[index].labelKey.tr, style: TextStyle(fontSize: 9, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? AppTheme.accentGreen : AppTheme.textPrimary), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -107,4 +107,5 @@ class _NavItem {
   final String labelKey;
   const _NavItem({required this.icon, required this.labelKey});
 }
+
 

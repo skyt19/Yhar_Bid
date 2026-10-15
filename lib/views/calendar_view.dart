@@ -36,7 +36,7 @@ class CalendarView extends StatelessWidget {
                   'calendar_synced'.tr,
                   '${calCtrl.events.length} ${'events_found'.tr}',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: AppTheme.accentSecondary,
+                  backgroundColor: AppTheme.accentGray,
                   colorText: Colors.white,
                   duration: const Duration(seconds: 2),
                 );
@@ -59,7 +59,7 @@ class CalendarView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const Icon(Icons.calendar_month, color: AppTheme.accentPrimary, size: 24),
+                  const Icon(Icons.calendar_month, color: AppTheme.accentGreen, size: 24),
                   const SizedBox(width: 12),
                   Text(
                     'calendar'.tr.toUpperCase(),
@@ -104,15 +104,15 @@ class CalendarView extends StatelessWidget {
                           },
                           calendarStyle: CalendarStyle(
                             todayDecoration: BoxDecoration(
-                              color: AppTheme.accentPrimary.withValues(alpha: 0.3),
+                              color: AppTheme.accentGreen.withValues(alpha: 0.3),
                               shape: BoxShape.circle,
                             ),
                             selectedDecoration: const BoxDecoration(
-                              color: AppTheme.accentPrimary,
+                              color: AppTheme.accentGreen,
                               shape: BoxShape.circle,
                             ),
                             markerDecoration: const BoxDecoration(
-                              color: AppTheme.accentSecondary,
+                              color: AppTheme.accentGray,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -120,6 +120,21 @@ class CalendarView extends StatelessWidget {
                             formatButtonVisible: false,
                             titleCentered: true,
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Upcoming Tasks & Week Summary Cards (Multi-Calendar Data)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: <Widget>[
+                            // Card 1: Upcoming Tasks (งานที่กำลังจะมาถึง)
+                            _buildUpcomingTasksCard(calCtrl),
+                            const SizedBox(height: 12),
+                            // Card 2: Tasks Within Week (งานในสัปดาห์นี้)
+                            _buildWeekSummaryCard(calCtrl),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -198,7 +213,7 @@ class CalendarView extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: isConnected ? AppTheme.accentSecondary : AppTheme.cardLight,
+                  color: isConnected ? AppTheme.accentGray : AppTheme.cardLight,
                   borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 ),
                 child: InkWell(
@@ -214,7 +229,7 @@ class CalendarView extends StatelessWidget {
                               'calendar_connected'.tr,
                               '${calCtrl.events.length} ${'events_found'.tr}',
                               snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: AppTheme.accentSecondary,
+                              backgroundColor: AppTheme.accentGray,
                               colorText: Colors.white,
                             );
                           }
@@ -224,7 +239,7 @@ class CalendarView extends StatelessWidget {
                     children: <Widget>[
                       Icon(
                         isConnected ? Icons.check_circle : Icons.login,
-                        color: isConnected ? Colors.white : AppTheme.accentPrimary,
+                        color: isConnected ? Colors.white : AppTheme.accentGreen,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -253,4 +268,145 @@ class CalendarView extends StatelessWidget {
       ),
     );
   }
+
+  /// Upcoming Tasks Card (งานที่กำลังจะมาถึง) - Real Multi-Calendar Data
+  Widget _buildUpcomingTasksCard(CalendarController calCtrl) {
+    final DateTime now = DateTime.now();
+    final List<CalendarEventModel> upcomingEvents = calCtrl.events
+        .where((CalendarEventModel e) => e.startTime.isAfter(now))
+        .take(5)
+        .toList();
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.upcoming, color: AppTheme.accentGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'งานที่กำลังจะมาถึง',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (upcomingEvents.isEmpty)
+            Text('ไม่มีงานที่กำลังจะมาถึง', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary))
+          else
+            ...upcomingEvents.map((CalendarEventModel event) {
+              final int daysUntil = event.startTime.difference(now).inDays;
+              final String timeText = daysUntil == 0
+                  ? 'วันนี้ ${DateFormat('HH:mm').format(event.startTime)}'
+                  : daysUntil == 1
+                      ? 'พรุ่งนี้ ${DateFormat('HH:mm').format(event.startTime)}'
+                      : 'อีก $daysUntil วัน';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: daysUntil <= 1 ? Colors.red : AppTheme.accentGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        event.title,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      timeText,
+                      style: TextStyle(fontSize: 12, color: daysUntil <= 1 ? Colors.red : AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+        ],
+      ),
+    );
+  }
+
+  /// Week Summary Card (งานในสัปดาห์นี้) - Real Metrics
+  Widget _buildWeekSummaryCard(CalendarController calCtrl) {
+    final DateTime now = DateTime.now();
+    final DateTime weekStart = now.subtract(Duration(days: now.weekday - 1));
+    final DateTime weekEnd = weekStart.add(const Duration(days: 6));
+    
+    final List<CalendarEventModel> weekEvents = calCtrl.events
+        .where((CalendarEventModel e) =>
+            e.startTime.isAfter(weekStart) && e.startTime.isBefore(weekEnd.add(const Duration(days: 1))))
+        .toList();
+    
+    final int total = weekEvents.length;
+    final int completed = weekEvents.where((CalendarEventModel e) => e.startTime.isBefore(now)).length;
+    final int pending = total - completed;
+    final double successRate = total > 0 ? (completed / total * 100) : 0.0;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.cardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.calendar_view_week, color: AppTheme.accentGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'งานในสัปดาห์นี้',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              _metricItem('ทั้งหมด', total.toString(), AppTheme.accentGray),
+              _metricItem('รอดำเนินการ', pending.toString(), Colors.orange),
+              _metricItem('เสร็จแล้ว', completed.toString(), AppTheme.accentGreen),
+              _metricItem('สำเร็จ', '${successRate.toStringAsFixed(0)}%', AppTheme.accentGreen),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricItem(String label, String value, Color color) {
+    return Column(
+      children: <Widget>[
+        Text(
+          value,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+        ),
+      ],
+    );
+  }
 }
+

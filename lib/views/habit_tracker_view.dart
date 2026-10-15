@@ -54,7 +54,7 @@ class _HabitTrackerViewState extends State<HabitTrackerView> {
               label: const Text('Talk with Chatbot'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
-                backgroundColor: AppTheme.accentSecondary,
+                backgroundColor: AppTheme.accentGray,
               ),
             ),
           ),
@@ -69,7 +69,7 @@ class _HabitTrackerViewState extends State<HabitTrackerView> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: _selectedTab == idx ? AppTheme.accentPrimary : Colors.transparent,
+          color: _selectedTab == idx ? AppTheme.accentGreen : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(label, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: _selectedTab == idx ? Colors.white : Colors.black)),
@@ -140,3 +140,4 @@ class _HabitTrackerViewState extends State<HabitTrackerView> {
     );
   }
 }
+

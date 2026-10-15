@@ -91,7 +91,7 @@ class CustomButton extends StatelessWidget {
       case AppButtonVariant.ghost:
         return ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: AppTheme.accentPrimary,
+          foregroundColor: AppTheme.accentGreen,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusPill),
           ),
@@ -102,3 +102,4 @@ class CustomButton extends StatelessWidget {
     }
   }
 }
+

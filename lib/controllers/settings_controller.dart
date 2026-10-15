@@ -23,6 +23,9 @@ class SettingsController extends GetxController {
   // เสียงแจ้งเตือน
   final RxString notificationSoundId = 'default'.obs;
   
+  // Test Mode: AI Outage Simulation (NFR-7)
+  final RxBool testModeAiOutage = false.obs;
+  
   // Storage Keys
   static const String _keyLanguage = 'language_code';
   static const String _keyAiLevel = 'ai_aggression_level';
@@ -79,6 +82,11 @@ class SettingsController extends GetxController {
   void toggleNotifications(bool value) {
     notificationsEnabled.value = value;
     _storage.write(_keyNotifications, value);
+  }
+  
+  /// Toggle Test Mode: AI Outage Simulation (NFR-7)
+  void toggleTestModeAiOutage() {
+    testModeAiOutage.value = !testModeAiOutage.value;
   }
 
   /// แปลง level เป็น AiPersonality enum

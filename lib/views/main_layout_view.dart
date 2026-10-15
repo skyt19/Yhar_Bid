@@ -31,9 +31,9 @@ class MainLayoutView extends StatelessWidget {
     ];
     
     return Scaffold(
-      backgroundColor: const Color(0xFFCFD8DC), // Background สีฟ้าเทาตาม Mockup
+      backgroundColor: const Color(0xFFF5F5F5), // Background สีเทาอบอุ่น (NO BLUE)
       appBar: AppBar(
-        backgroundColor: const Color(0xFFCFD8DC),
+        backgroundColor: const Color(0xFFF5F5F5),
         elevation: 0,
         title: const Text(
           'App V. xxx',
@@ -44,8 +44,24 @@ class MainLayoutView extends StatelessWidget {
           ),
         ),
         actions: [
+          // SRS Test Lab Button
+          IconButton(
+            icon: Icon(Icons.science, color: AppTheme.accentGreen),
+            tooltip: 'SRS Test Lab',
+            onPressed: () {
+              Get.toNamed('/srs-test-lab');
+            },
+          ),
           Obx(() => GestureDetector(
-            onTap: settingsCtrl.toggleLanguage,
+            onTap: () {
+              // Toggle locale between TH and EN
+              Get.updateLocale(
+                Get.locale?.languageCode == 'th' 
+                  ? const Locale('en', 'US') 
+                  : const Locale('th', 'TH')
+              );
+              settingsCtrl.toggleLanguage();
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               margin: const EdgeInsets.only(right: 16),
@@ -69,3 +85,4 @@ class MainLayoutView extends StatelessWidget {
     );
   }
 }
+

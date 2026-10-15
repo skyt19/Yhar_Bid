@@ -115,6 +115,20 @@ class AIWorkspaceView extends StatelessWidget {
       ),
       child: Row(
         children: [
+          IconButton(
+            icon: const Icon(Icons.attach_file, color: Color(0xFF757575)),
+            onPressed: () {
+              Get.snackbar(
+                'แนบไฟล์',
+                'คุณสมบัตินี้กำลังจะเปิดให้ใช้งานเร็วๆ นี้',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: const Color(0xFF4CAF50),
+                colorText: Colors.white,
+              );
+            },
+            tooltip: 'แนบไฟล์',
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: ctrl,
@@ -133,7 +147,6 @@ class AIWorkspaceView extends StatelessWidget {
               },
             ),
           ),
-          // ซ่อนปุ่ม Send Icon ตาม Mockup (รูปไม่มีไอคอนส่ง)
           const SizedBox(width: 8),
         ],
       ),

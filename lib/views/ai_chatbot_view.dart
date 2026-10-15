@@ -82,7 +82,7 @@ class _AiChatbotViewState extends State<AiChatbotView> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
                           decoration: BoxDecoration(
-                            color: isUser ? AppTheme.accentPrimary.withOpacity(0.12) : AppTheme.cardLight,
+                            color: isUser ? AppTheme.accentGreen.withOpacity(0.12) : AppTheme.cardLight,
                             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                           ),
                           child: Text(messages[i]['content']!, style: const TextStyle(fontSize: 15, height: 1.4)),
@@ -129,7 +129,7 @@ class _AiChatbotViewState extends State<AiChatbotView> {
                       child: Container(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(color: AppTheme.accentPrimary, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: AppTheme.accentGreen, shape: BoxShape.circle),
                         child: const Icon(Icons.send, color: Colors.white, size: 22),
                       ),
                     ),
@@ -152,12 +152,12 @@ class _AiChatbotViewState extends State<AiChatbotView> {
         decoration: BoxDecoration(
           color: AppTheme.cardLight,
           borderRadius: BorderRadius.circular(AppTheme.radiusPill),
-          border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.3)),
+          border: Border.all(color: AppTheme.accentGreen.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 16, color: AppTheme.accentPrimary),
+            Icon(icon, size: 16, color: AppTheme.accentGreen),
             const SizedBox(width: 6),
             Text(label, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary)),
           ],
@@ -166,3 +166,7 @@ class _AiChatbotViewState extends State<AiChatbotView> {
     );
   }
 }
+
+
+
+

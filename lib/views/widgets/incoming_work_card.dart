@@ -34,7 +34,7 @@ class IncomingWorkCard extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.event_available, color: AppTheme.accentPrimary, size: 24),
+              Icon(Icons.event_available, color: AppTheme.accentGreen, size: 24),
               const SizedBox(width: 8),
               Text(
                 'incoming_work'.tr,
@@ -125,7 +125,7 @@ class IncomingWorkCard extends StatelessWidget {
             width: 4,
             height: 40,
             decoration: BoxDecoration(
-              color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentPrimary,
+              color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentGreen,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -160,7 +160,7 @@ class IncomingWorkCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: timeUntil.inHours < 24
                   ? Colors.red.withValues(alpha: 0.1)
-                  : AppTheme.accentPrimary.withValues(alpha: 0.1),
+                  : AppTheme.accentGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -168,7 +168,7 @@ class IncomingWorkCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentPrimary,
+                color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentGreen,
               ),
             ),
           ),
@@ -177,3 +177,4 @@ class IncomingWorkCard extends StatelessWidget {
     );
   }
 }
+

@@ -11,6 +11,7 @@ import '../core/config/app_config.dart';
 
 // Conditional imports สำหรับ Web
 import 'dart:js_interop' as js;
+// ignore: uri_does_not_exist, avoid_web_libraries_in_flutter
 import 'dart:js_util' as js_util;
 
 /// Standard Error Response Format ตาม .clinerules

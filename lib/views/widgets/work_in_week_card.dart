@@ -33,7 +33,7 @@ class WorkInWeekCard extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.calendar_month, color: AppTheme.accentSecondary, size: 24),
+              Icon(Icons.calendar_month, color: AppTheme.accentGray, size: 24),
               const SizedBox(width: 8),
               Text(
                 'work_in_week'.tr,
@@ -79,14 +79,14 @@ class WorkInWeekCard extends StatelessWidget {
                   icon: Icons.task_alt,
                   label: 'tasks_this_week'.tr,
                   value: '$totalTasks',
-                  color: AppTheme.accentPrimary,
+                  color: AppTheme.accentGreen,
                 ),
                 const SizedBox(height: 12),
                 _buildStatRow(
                   icon: Icons.check_circle,
                   label: 'completed_tasks'.tr,
                   value: '$completedTasks',
-                  color: AppTheme.accentSecondary,
+                  color: AppTheme.accentGray,
                 ),
                 const SizedBox(height: 12),
                 _buildStatRow(
@@ -158,7 +158,7 @@ class WorkInWeekCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.accentPrimary,
+                color: AppTheme.accentGreen,
               ),
             ),
           ],
@@ -169,7 +169,7 @@ class WorkInWeekCard extends StatelessWidget {
           child: LinearProgressIndicator(
             value: rate,
             backgroundColor: Colors.grey.shade200,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentSecondary),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentGray),
             minHeight: 8,
           ),
         ),
@@ -177,3 +177,4 @@ class WorkInWeekCard extends StatelessWidget {
     );
   }
 }
+
