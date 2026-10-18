@@ -115,10 +115,54 @@ class CalendarView extends StatelessWidget {
                               color: AppTheme.accentGray,
                               shape: BoxShape.circle,
                             ),
+                            // Fix calendar readability: white text on dark background
+                            defaultTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            weekendTextStyle: const TextStyle(
+                              color: Color(0xFF86EFAC), // Light green for weekends
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            todayTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            selectedTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            outsideTextStyle: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.38),
+                              fontSize: 13,
+                            ),
                           ),
                           headerStyle: const HeaderStyle(
                             formatButtonVisible: false,
                             titleCentered: true,
+                            titleTextStyle: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
+                            rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+                          ),
+                          daysOfWeekStyle: const DaysOfWeekStyle(
+                            weekdayStyle: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            weekendStyle: TextStyle(
+                              color: Color(0xFF86EFAC),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),

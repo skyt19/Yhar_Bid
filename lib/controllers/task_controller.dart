@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:html' as html; // For Flutter Web file download
 import '../models/task_model.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/analytics_controller.dart';
+import '../views/theme/app_theme.dart';
 
 class TaskController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -145,12 +147,34 @@ class TaskController extends GetxController {
   
   /// ดาวน์โหลดโครงร่างงานเป็นไฟล์ .md (Markdown File Download)
   /// Starts 48-hour countdown timer by setting firstDownloadedAt
+  /// Flutter Web implementation using dart:html Blob and URL download
   Future<void> downloadTaskOutline(TaskModel task) async {
     final AuthController authCtrl = Get.find<AuthController>();
     final user = authCtrl.currentUser.value;
     if (user == null) return;
     
     try {
+      // Generate markdown content with full outline
+      final String markdownContent = '''# ${task.title}
+
+## รายละเอียดงาน
+${task.description}
+
+---
+สร้างเมื่อ: ${task.createdAt.toString().substring(0, 16)}
+${task.dueDate != null ? 'กำหนดส่ง: ${task.dueDate.toString().substring(0, 16)}' : ''}
+ลำดับความสำคัญ: ${task.priority}
+''';
+
+      // Flutter Web: Create Blob and trigger download
+      // ignore: avoid_web_libraries_in_flutter
+      final html.Blob blob = html.Blob([markdownContent], 'text/markdown;charset=utf-8');
+      final String url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', '${task.title.replaceAll(RegExp(r'[^\w\s-]'), '_')}_outline.md')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+      
       // Update firstDownloadedAt to start 48-hour countdown
       if (task.firstDownloadedAt == null) {
         await _firestore
@@ -168,18 +192,20 @@ class TaskController extends GetxController {
         
         Get.snackbar(
           'ดาวน์โหลดสำเร็จ',
-          'เริ่มนับถอยหลัง 48 ชั่วโมง',
+          'ไฟล์โครงร่างถูกดาวน์โหลดแล้ว • เริ่มนับถอยหลัง 48 ชั่วโมง',
           snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: AppTheme.accentGreen,
           colorText: Colors.white,
+          duration: const Duration(seconds: 3),
         );
       } else {
         Get.snackbar(
-          'แสดงโครงร่าง',
-          'คัดลอกเนื้อหาได้จากหน้าต่างที่แสดง',
+          'ดาวน์โหลดสำเร็จ',
+          'ไฟล์โครงร่างถูกดาวน์โหลดแล้ว',
           snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: AppTheme.accentGreen,
           colorText: Colors.white,
+          duration: const Duration(seconds: 2),
         );
       }
     } catch (e) {

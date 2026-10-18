@@ -36,7 +36,7 @@ class MainLayoutView extends StatelessWidget {
         backgroundColor: const Color(0xFFF5F5F5),
         elevation: 0,
         title: const Text(
-          'App V. xxx',
+          'App V.1.0',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
