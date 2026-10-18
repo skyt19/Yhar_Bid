@@ -22,10 +22,12 @@ class AppConfig {
   /// security rules. For sensitive backend APIs, use Firebase Functions instead.
   /// 
   /// Get your keys from:
-  /// - Gemini: https://aistudio.google.com/app/apikey
+  /// - Groq Cloud: https://console.groq.com/keys
   /// - Google OAuth: https://console.cloud.google.com/apis/credentials
-  static const String _FALLBACK_GEMINI_API_KEY = 
-      'AQ.Ab8RN6K-jOMiPyueBw7S17lA1jWjhQNaTfo76DFu9dvpfRi-ig';
+  static const String _FALLBACK_GROQ_API_KEY = 
+      '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';
+  
+  static const String _FALLBACK_AI_MODEL = 'openai/gpt-oss-20b';
   
   static const String _FALLBACK_GOOGLE_CLIENT_ID = 
       '197558461101-fpvs52hlfg76po4c5bmufqotpr962hf6.apps.googleusercontent.com';
@@ -37,25 +39,40 @@ class AppConfig {
   // PUBLIC GETTERS (with Fallback Logic)
   // ============================================
 
-  /// Gemini API Key (AI Service)
+  /// Groq Cloud API Key (AI Service)
   /// Priority: .env -> Fallback constant
   /// NEVER throws exceptions - returns placeholder if not configured
-  static String get geminiApiKey {
+  static String get groqApiKey {
     try {
-      final String? envKey = dotenv.env['GEMINI_API_KEY'];
+      final String? envKey = dotenv.env['GROQ_API_KEY'];
       if (envKey != null && envKey.isNotEmpty) {
         return envKey;
       }
     } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading GEMINI_API_KEY from dotenv: $e');
+      debugPrint('⚠️ [AppConfig] Error reading GROQ_API_KEY from dotenv: $e');
     }
     
-    if (_FALLBACK_GEMINI_API_KEY.startsWith('YOUR_')) {
-      debugPrint('❌ [AppConfig] GEMINI_API_KEY not configured! AI features will be disabled.');
-      return 'UNCONFIGURED_GEMINI_KEY';
+    if (_FALLBACK_GROQ_API_KEY.startsWith('YOUR_')) {
+      debugPrint('❌ [AppConfig] GROQ_API_KEY not configured! AI features will be disabled.');
+      return 'UNCONFIGURED_GROQ_KEY';
     }
-    debugPrint('⚠️ [AppConfig] GEMINI_API_KEY not found in .env, using built-in fallback');
-    return _FALLBACK_GEMINI_API_KEY;
+    debugPrint('⚠️ [AppConfig] GROQ_API_KEY not found in .env, using built-in fallback');
+    return _FALLBACK_GROQ_API_KEY;
+  }
+
+  /// AI Model Name (Groq Model ID)
+  /// Priority: .env -> Fallback constant
+  static String get aiModel {
+    try {
+      final String? envModel = dotenv.env['AI_MODEL'];
+      if (envModel != null && envModel.isNotEmpty) {
+        return envModel;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AppConfig] Error reading AI_MODEL from dotenv: $e');
+    }
+    debugPrint('⚠️ [AppConfig] AI_MODEL not found in .env, using built-in fallback');
+    return _FALLBACK_AI_MODEL;
   }
 
   /// Google OAuth Client ID
@@ -109,25 +126,25 @@ class AppConfig {
   static void validate() {
     debugPrint('🔧 [AppConfig] Validating configuration...');
     
-    bool hasEnvGemini = false;
+    bool hasEnvGroq = false;
     bool hasEnvClientId = false;
     bool hasEnvClientSecret = false;
     
     try {
-      hasEnvGemini = dotenv.env['GEMINI_API_KEY'] != null && dotenv.env['GEMINI_API_KEY']!.isNotEmpty;
+      hasEnvGroq = dotenv.env['GROQ_API_KEY'] != null && dotenv.env['GROQ_API_KEY']!.isNotEmpty;
       hasEnvClientId = dotenv.env['GOOGLE_CLIENT_ID'] != null && dotenv.env['GOOGLE_CLIENT_ID']!.isNotEmpty;
       hasEnvClientSecret = dotenv.env['GOOGLE_CLIENT_SECRET'] != null && dotenv.env['GOOGLE_CLIENT_SECRET']!.isNotEmpty;
     } catch (e) {
       debugPrint('⚠️ [AppConfig] Error reading .env: $e');
     }
     
-    if (!hasEnvGemini || !hasEnvClientId || !hasEnvClientSecret) {
+    if (!hasEnvGroq || !hasEnvClientId || !hasEnvClientSecret) {
       debugPrint('⚠️ [AppConfig] Some keys missing from .env, checking fallbacks:');
-      if (!hasEnvGemini) {
-        if (_FALLBACK_GEMINI_API_KEY.startsWith('YOUR_')) {
-          debugPrint('  ❌ GEMINI_API_KEY: NOT CONFIGURED');
+      if (!hasEnvGroq) {
+        if (_FALLBACK_GROQ_API_KEY.startsWith('YOUR_')) {
+          debugPrint('  ❌ GROQ_API_KEY: NOT CONFIGURED');
         } else {
-          debugPrint('  ✅ GEMINI_API_KEY: FALLBACK OK');
+          debugPrint('  ✅ GROQ_API_KEY: FALLBACK OK');
         }
       }
       if (!hasEnvClientId) {
@@ -160,14 +177,20 @@ class AppConfig {
   static void printStatus() {
     debugPrint('📊 [AppConfig] Current Configuration Status:');
     try {
-      final String gemini = geminiApiKey;
-      if (gemini == 'UNCONFIGURED_GEMINI_KEY') {
-        debugPrint('  Gemini API Key: NOT CONFIGURED');
+      final String groqKey = groqApiKey;
+      if (groqKey == 'UNCONFIGURED_GROQ_KEY') {
+        debugPrint('  Groq API Key: NOT CONFIGURED');
       } else {
-        debugPrint('  Gemini API Key: ${gemini.substring(0, gemini.length > 20 ? 20 : gemini.length)}...');
+        debugPrint('  Groq API Key: ${groqKey.substring(0, groqKey.length > 20 ? 20 : groqKey.length)}...');
       }
     } catch (e) {
-      debugPrint('  Gemini API Key: ERROR - $e');
+      debugPrint('  Groq API Key: ERROR - $e');
+    }
+    try {
+      final String model = aiModel;
+      debugPrint('  AI Model: $model');
+    } catch (e) {
+      debugPrint('  AI Model: ERROR - $e');
     }
     try {
       final String clientId = googleClientId;

@@ -65,9 +65,10 @@ class DashboardHomeView extends StatelessWidget {
   Widget _buildCalendarContainer(CalendarController calendarCtrl) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B), // DARK slate background for high contrast
+        color: Colors.white, // White background
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: <BoxShadow>[BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+        border: Border.all(color: const Color(0xFF9E9E9E), width: 1.5), // Gray border
+        boxShadow: <BoxShadow>[BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -76,7 +77,7 @@ class DashboardHomeView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              const Text('Calendar API', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              const Text('Calendar API', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               ElevatedButton.icon(
                 onPressed: () async {
                   await calendarCtrl.fetchEvents();
@@ -84,7 +85,7 @@ class DashboardHomeView extends StatelessWidget {
                 },
                 icon: const Icon(Icons.sync, size: 18),
                 label: const Text('Sync'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGray, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGreen, foregroundColor: Colors.white),
               ),
             ],
           ),
@@ -96,21 +97,26 @@ class DashboardHomeView extends StatelessWidget {
                 selectedDayPredicate: (DateTime day) => isSameDay(calendarCtrl.selectedDay.value, day),
                 onDaySelected: (DateTime selectedDay, DateTime focusedDay) => calendarCtrl.selectDay(selectedDay, focusedDay),
                 calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(color: AppTheme.accentGreen.withValues(alpha: 0.5), shape: BoxShape.circle),
-                  selectedDecoration: const BoxDecoration(color: AppTheme.accentGreen, shape: BoxShape.circle),
-                  // HIGH CONTRAST FIX: White text on dark background
-                  defaultTextStyle: const TextStyle(color: Colors.white),
-                  weekendTextStyle: const TextStyle(color: Color(0xFFFCA5A5)),
-                  outsideTextStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                  todayDecoration: const BoxDecoration(color: AppTheme.accentGreen, shape: BoxShape.circle),
+                  selectedDecoration: const BoxDecoration(color: Color(0xFF2E7D32), shape: BoxShape.circle),
+                  // Black text on white background
+                  defaultTextStyle: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+                  weekendTextStyle: const TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
+                  todayTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  selectedTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  outsideTextStyle: const TextStyle(color: Colors.black26),
+                  markerDecoration: const BoxDecoration(color: AppTheme.accentGreen, shape: BoxShape.circle),
+                  markersMaxCount: 3,
+                  markerSize: 6.0,
                 ),
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  titleTextStyle: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  titleTextStyle: TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 daysOfWeekStyle: const DaysOfWeekStyle(
-                  weekdayStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  weekendStyle: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+                  weekdayStyle: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+                  weekendStyle: TextStyle(color: Color(0xFF4CAF50), fontWeight: FontWeight.bold),
                 ),
                 eventLoader: (DateTime day) => calendarCtrl.getEventsForDay(day),
               )),

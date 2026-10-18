@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/proactive_controller.dart';
 import '../../models/task_model.dart';
+import '../widgets/add_task_dialog.dart';
 
 class TasksView extends StatelessWidget {
   const TasksView({super.key});
@@ -14,10 +15,10 @@ class TasksView extends StatelessWidget {
     final proactiveCtrl = Get.find<ProactiveController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0E14),
+      backgroundColor: const Color(0xFFF5F5F5), // Light gray background
       appBar: AppBar(
-        title: const Text('งานทั้งหมด'),
-        backgroundColor: Colors.transparent,
+        title: const Text('งานทั้งหมด', style: TextStyle(color: Colors.black87)),
+        backgroundColor: const Color(0xFFF5F5F5),
         elevation: 0,
         actions: [
           Padding(
@@ -67,10 +68,14 @@ class TasksView extends StatelessWidget {
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => taskCtrl.selectedFilter.value = value,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: Colors.white,
       selectedColor: AppTheme.accentGreen,
+      side: BorderSide(
+        color: isSelected ? AppTheme.accentGreen : const Color(0xFF9E9E9E),
+        width: 1.5,
+      ),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.white70,
+        color: isSelected ? Colors.white : Colors.black87,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );
@@ -84,7 +89,7 @@ class TasksView extends StatelessWidget {
         return const Center(
           child: Text(
             'ไม่มีงานในขณะนี้',
-            style: TextStyle(color: Colors.white54, fontSize: 16),
+            style: TextStyle(color: Colors.black54, fontSize: 16),
           ),
         );
       }
@@ -102,8 +107,14 @@ class TasksView extends StatelessWidget {
   Widget _buildTaskCard(TaskModel task, TaskController taskCtrl, ProactiveController proactiveCtrl, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF1E293B),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white, // White card background
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(
+          color: Color(0xFF9E9E9E), // Gray border
+          width: 1.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -128,7 +139,7 @@ class TasksView extends StatelessWidget {
                       Text(
                         task.title,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black87, // Black text
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           decoration: task.isDone
@@ -138,15 +149,28 @@ class TasksView extends StatelessWidget {
                       ),
                       if (task.description.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            task.description,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'AI Preparation Outline:',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                task.description,
+                                style: const TextStyle(
+                                  color: Colors.black87, // Black text for outline
+                                  fontSize: 14,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],
@@ -292,13 +316,7 @@ class TasksView extends StatelessWidget {
   }
 
   void _showAddTaskDialog(BuildContext context, TaskController taskCtrl) {
-    Get.snackbar(
-      'เพิ่มงาน',
-      'ใช้ปุ่ม + ที่หน้าปฏิทินเพื่อเพิ่มงาน',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppTheme.accentOrange,
-      colorText: Colors.white,
-    );
+    Get.dialog(const AddTaskDialog());
   }
 
   void _showDeleteConfirmDialog(BuildContext context, TaskModel task, TaskController taskCtrl) {

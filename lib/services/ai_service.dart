@@ -1,5 +1,5 @@
 /// lib/services/ai_service.dart (Part 1/2)
-/// Service Layer สำหรับ Gemini/Gemma AI Integration
+/// Service Layer สำหรับ Groq Cloud API Integration (OpenAI-Compatible)
 /// รองรับ Role-based prompts พร้อม Offline Fallback Templates
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -19,13 +19,10 @@ class AiServiceResponse {
 
 /// AI Service Layer — Pure Business Logic, ไม่ depend on Controllers
 class AiService {
-  static const String _geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
-  
-  /// Gemma Model Fallback Chain ตามคำสั่ง: gemma-4-26b-a4b-it → gemma-4-31b-it
-  static const List<String> _modelPriority = <String>[
-    'gemma-4-26b-a4b-it',      // PRIMARY: Gemma 4 26B Apex Instruction-Tuned
-    'gemma-4-31b-it',          // FALLBACK: Gemma 4 31B Instruction-Tuned
-  ];
+  /// Groq Cloud API (OpenAI-Compatible Chat Completions Endpoint)
+  /// Model: llama-3.3-70b-versatile
+  /// Base URL: https://api.groq.com/openai/v1/chat/completions
+  static const String _groqBaseUrl = 'https://api.groq.com/openai/v1/chat/completions';
 
   /// Offline Fallback Templates ตาม .clinerules Section 3.B
   static const Map<String, List<String>> _fallbackTaskOutlines = <String, List<String>>{
@@ -84,46 +81,48 @@ class AiService {
 STRICT ANTI-SLOP & ANTI-HALLUCINATION RULES:
 1. NEVER output polite intros, pleasantries, greetings, or sign-offs (e.g., NO "สวัสดีครับ", "ยินดีที่ได้ช่วย", "นี่คือโครงร่างของคุณ")
 2. NEVER output emojis or unicode pictographs
-3. Base all outputs STRICTLY on the provided calendar event title and description. DO NOT invent fake external context.
-4. Output ONLY a valid JSON string without Markdown wrappers (no ```json code blocks)
+3. READ BOTH event.title AND event.description THOROUGHLY. Base all action_items on the actual topics/content mentioned in the description.
+4. DO NOT invent fake external context. If description is empty, use generic steps, but if description has content, EXTRACT SPECIFIC TOPICS and create action items around those exact topics.
+5. Output ONLY a valid JSON string without Markdown wrappers (no ```json code blocks)
 
 MANDATORY JSON SCHEMA:
 {
-  "summary": "Concise summary under 60 chars",
+  "summary": "Concise goal summary under 60 chars mentioning the specific topic if provided",
   "action_items": [
-    "Step 1: Specific action item",
-    "Step 2: Specific action item",
-    "Step 3: Specific action item"
+    "ข้อ 1: Concrete action based on actual event content/topic",
+    "ข้อ 2: Concrete action based on actual event content/topic",
+    "ข้อ 3: Concrete action based on actual event content/topic",
+    "ข้อ 4: Concrete action based on actual event content/topic"
   ],
-  "notification": "Direct reminder under 120 chars"
+  "notification": "Direct reminder mentioning the topic (under 120 chars)"
 }
 
-RESPOND IN THAI. BE CONCISE AND DIRECT.''';
+RESPOND IN THAI. BE CONCISE AND DIRECT. EXTRACT REAL TOPICS FROM DESCRIPTION.''';
 
     switch (role) {
       case UserRole.student:
         return '''$strictCore
 
 ROLE CONTEXT: Student Task Preparation
-- summary: ให้สรุปเนื้อหางาน (ไม่เกิน 60 ตัวอักษร)
-- action_items: ให้แบ่งเป็นขั้นตอนเตรียมตัว 3-4 ข้อ เช่น "อ่านทบทวนบทที่ 1-3", "สรุปประเด็นหลัก", "ฝึกซ้อมนำเสนอ"
-- notification: ให้เขียนแจ้งเตือนแบบตรงไปตรงมา ไม่เกิน 120 ตัวอักษร''';
+- summary: สรุปเนื้อหางานและหัวข้อเฉพาะที่ต้องเตรียม (ไม่เกิน 60 ตัวอักษร)
+- action_items: แบ่งเป็น 4 ขั้นตอนเตรียมตัวที่เจาะจงกับหัวข้อจริงจากรายละเอียด เช่น "อ่านทบทวน [หัวข้อเฉพาะ]", "สรุปประเด็นสำคัญเรื่อง [หัวข้อ]", "ฝึกซ้อมนำเสนอ [หัวข้อ]", "เตรียมอุปกรณ์สำหรับ [งาน]"
+- notification: แจ้งเตือนที่ระบุหัวข้อเฉพาะ ไม่เกิน 120 ตัวอักษร''';
 
       case UserRole.corporateEmployee:
         return '''$strictCore
 
 ROLE CONTEXT: Corporate Employee Meeting Preparation
-- summary: ให้สรุปประเด็นประชุม (ไม่เกิน 60 ตัวอักษร)
-- action_items: ให้ระบุสิ่งที่ต้องเตรียม 3-4 ข้อ เช่น "ศึกษาวาระการประชุม", "รวบรวมข้อมูลที่เกี่ยวข้อง", "เตรียมคำถาม"
-- notification: ให้เขียนแจ้งเตือนแบบมืออาชีพ ไม่เกิน 120 ตัวอักษร''';
+- summary: สรุปประเด็นประชุมและหัวข้อที่ต้องพูดคุย (ไม่เกิน 60 ตัวอักษร)
+- action_items: ระบุ 4 ขั้นตอนที่เจาะจงกับหัวข้อประชุมจริง เช่น "ศึกษาวาระเรื่อง [หัวข้อ]", "รวบรวมข้อมูลเกี่ยวกับ [หัวข้อ]", "เตรียมคำถามสำหรับ [ประเด็น]", "ทบทวน [เอกสาร]"
+- notification: แจ้งเตือนที่ระบุหัวข้อประชุมเฉพาะ ไม่เกิน 120 ตัวอักษร''';
 
       case UserRole.educator:
         return '''$strictCore
 
 ROLE CONTEXT: Educator Lesson Preparation
-- summary: ให้สรุปหัวข้อการสอน (ไม่เกิน 60 ตัวอักษร)
-- action_items: ให้ระบุสิ่งที่ต้องเตรียม 3-4 ข้อ เช่น "ทบทวนหัวข้อบทเรียน", "เตรียม Slides", "ออกแบบกิจกรรม"
-- notification: ให้เขียนแจ้งเตือนแบบเป็นกันเอง ไม่เกิน 120 ตัวอักษร''';
+- summary: สรุปหัวข้อการสอนและเนื้อหาที่ต้องสอน (ไม่เกิน 60 ตัวอักษร)
+- action_items: ระบุ 4 ขั้นตอนที่เจาะจงกับหัวข้อสอนจริง เช่น "ทบทวนเนื้อหา [หัวข้อบทเรียน]", "เตรียม Slides สำหรับ [หัวข้อ]", "ออกแบบกิจกรรมเกี่ยวกับ [เนื้อหา]", "เตรียมแบบทดสอบ [หัวข้อ]"
+- notification: แจ้งเตือนที่ระบุหัวข้อสอนเฉพาะ ไม่เกิน 120 ตัวอักษร''';
     }
   }
 
@@ -135,64 +134,91 @@ ROLE CONTEXT: Educator Lesson Preparation
   }) async {
     try {
       final String systemPrompt = _buildZeroSlopJsonSystemPrompt(role);
-      final String userPrompt = '''งานที่จะถึง: ${event.title}
-รายละเอียด: ${event.description ?? 'ไม่มีรายละเอียด'}
+      final String eventDesc = (event.description == null || event.description!.trim().isEmpty)
+          ? 'ไม่มีรายละเอียด (ใช้ขั้นตอนทั่วไป)'
+          : event.description!;
+      
+      final String userPrompt = '''ชื่องาน: ${event.title}
+
+รายละเอียด: $eventDesc
+
 เวลา: ${event.startTime.toString().substring(0, 16)}
 
-ตอบกลับเป็น JSON โครงสร้างตามที่กำหนด:''';
+อ่านรายละเอียดและหัวข้อเฉพาะอย่างละเอียด แล้วสร้างโครงร่างการเตรียมงาน 4 ข้อย่อยที่เจาะจงกับเนื้อหาจริง''';
 
-      final String? apiKey = dotenv.env['GEMINI_API_KEY'] ?? AppConfig.geminiApiKey;
-      if (apiKey?.isEmpty ?? true || apiKey!.startsWith('UNCONFIGURED')) {
+      final String? apiKey = dotenv.env['GROQ_API_KEY'] ?? AppConfig.groqApiKey;
+      
+      // NFR-7: Validate API key format (Groq keys start with "gsk_")
+      // If malformed, expired, or empty, use fallback immediately
+      if (apiKey == null || 
+          apiKey.isEmpty || 
+          apiKey.startsWith('UNCONFIGURED') ||
+          apiKey.length < 30) {
+        debugPrint('⚠️ [AiService] Invalid/missing Groq API key, using NFR-7 fallback');
         return _getJsonFallbackTemplate(event, role);
       }
 
-      final Uri uri = Uri.parse('$_geminiBaseUrl/gemma-4-26b-a4b-it:generateContent?key=$apiKey');
+      // Groq Cloud API Request (OpenAI-Compatible)
+      final Uri uri = Uri.parse(_groqBaseUrl);
       final http.Response response = await http.post(
         uri,
-        headers: <String, String>{'Content-Type': 'application/json'},
+        headers: <String, String>{
+          'Authorization': 'Bearer ${apiKey.trim()}',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
         body: json.encode(<String, dynamic>{
-          'contents': <Map<String, dynamic>>[
-            <String, dynamic>{
+          'model': AppConfig.aiModel,
+          'messages': <Map<String, String>>[
+            <String, String>{
+              'role': 'system',
+              'content': systemPrompt,
+            },
+            <String, String>{
               'role': 'user',
-              'parts': <Map<String, dynamic>>[
-                <String, dynamic>{'text': '$systemPrompt\n\n$userPrompt'}
-              ]
+              'content': userPrompt,
             },
           ],
-          'generationConfig': <String, dynamic>{
-            'maxOutputTokens': 300,
-            'temperature': 0.5,
-          },
+          'response_format': <String, String>{'type': 'json_object'},
+          'temperature': 0.2,
+          'max_tokens': 1024,
         }),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body) as Map<String, dynamic>;
-        final List<dynamic> candidates = data['candidates'] as List<dynamic>? ?? <dynamic>[];
-        if (candidates.isNotEmpty) {
-          final String aiText = (((candidates.first as Map<String, dynamic>)['content'] as Map<String, dynamic>)['parts'] as List<dynamic>).first['text'] as String? ?? '';
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        if (data.containsKey('choices') && (data['choices'] as List<dynamic>).isNotEmpty) {
+          final String aiText = data['choices'][0]['message']['content'] as String? ?? '';
           if (aiText.isNotEmpty) {
-            // Clean potential Markdown wrappers
-            final String cleanJson = aiText.replaceAll(RegExp(r'```json\s*|\s*```'), '').trim();
             try {
-              final Map<String, dynamic> parsed = json.decode(cleanJson) as Map<String, dynamic>;
+              final Map<String, dynamic> parsed = json.decode(aiText) as Map<String, dynamic>;
               // Validate schema
               if (parsed.containsKey('summary') && parsed.containsKey('action_items') && parsed.containsKey('notification')) {
+                debugPrint('✅ [AiService] Valid JSON response from Groq API (${AppConfig.aiModel})');
                 return parsed;
               }
             } catch (_) {
               // JSON parsing failed, use fallback
+              debugPrint('⚠️ [AiService] JSON parse failed, using fallback');
             }
           }
         }
-      } else if (response.statusCode == 401) {
-        debugPrint('❌ [AiService] 401 Unauthorized: Invalid Gemini API Key');
+      } else {
+        // NFR-7: Log all non-200 responses with detailed payload for debugging
+        debugPrint('⚠️ [AiService] Groq API returned status ${response.statusCode}: ${response.body}');
+        if (response.statusCode == 400) {
+          debugPrint('   Reason: Bad Request - check payload schema');
+        } else if (response.statusCode == 401 || response.statusCode == 403) {
+          debugPrint('   Reason: Invalid/expired API token');
+        } else if (response.statusCode == 429) {
+          debugPrint('   Reason: Rate limit exceeded');
+        }
       }
     } catch (e) {
-      debugPrint('⚠️ [AiService] Error calling Gemini API: $e');
+      debugPrint('⚠️ [AiService] Network/timeout error: $e');
     }
 
-    // NFR-7 Fallback
+    // NFR-7 Fallback: Always return valid JSON structure
+    debugPrint('📋 [AiService] Returning NFR-7 deterministic fallback template');
     return _getJsonFallbackTemplate(event, role);
   }
 
@@ -276,56 +302,68 @@ $roleContext
     }
   }
 
-  /// Generate Content with Gemini/Gemma API (Fallback Chain)
+  /// Generate Content with Groq Cloud API
   Future<AiServiceResponse> generateContent({
     required String prompt,
     required UserRole role,
     int maxTokens = 512,
   }) async {
-    final String? apiKey = dotenv.env['GEMINI_API_KEY'];
+    final String? apiKey = dotenv.env['GROQ_API_KEY'];
     if (apiKey == null || apiKey.isEmpty) {
       // Fallback to AppConfig embedded key
-      final String fallbackKey = AppConfig.geminiApiKey;
+      final String fallbackKey = AppConfig.groqApiKey;
       if (fallbackKey.isEmpty) {
-        return AiServiceResponse(status: false, message: 'GEMINI_API_KEY unavailable', data: _getFallbackTemplate(role));
+        return AiServiceResponse(status: false, message: 'GROQ_API_KEY unavailable', data: _getFallbackTemplate(role));
       }
-      return await _callGeminiApi(fallbackKey, prompt, role, maxTokens);
+      return await _callGroqApi(fallbackKey, prompt, role, maxTokens);
     }
-    return await _callGeminiApi(apiKey, prompt, role, maxTokens);
+    return await _callGroqApi(apiKey, prompt, role, maxTokens);
   }
 
-  Future<AiServiceResponse> _callGeminiApi(String apiKey, String prompt, UserRole role, int maxTokens) async {
+  Future<AiServiceResponse> _callGroqApi(String apiKey, String prompt, UserRole role, int maxTokens) async {
 
     final String systemPrompt = _buildSystemPromptZeroSlop(role);
-    final String fullPrompt = '$systemPrompt\n\n$prompt';
 
-    for (String model in _modelPriority) {
-      try {
-        final Uri uri = Uri.parse('$_geminiBaseUrl/$model:generateContent?key=$apiKey');
-        final http.Response response = await http.post(
-          uri,
-          headers: <String, String>{'Content-Type': 'application/json'},
-          body: json.encode(<String, dynamic>{
-            'contents': <Map<String, dynamic>>[
-              <String, dynamic>{'role': 'user', 'parts': <Map<String, dynamic>>[<String, dynamic>{'text': fullPrompt}]},
-            ],
-            'generationConfig': <String, dynamic>{'maxOutputTokens': maxTokens, 'temperature': 0.7},
-          }),
-        ).timeout(const Duration(seconds: 15));
+    try {
+      // Groq Cloud API Request (OpenAI-Compatible)
+      final Uri uri = Uri.parse(_groqBaseUrl);
+      final http.Response response = await http.post(
+        uri,
+        headers: <String, String>{
+          'Authorization': 'Bearer ${apiKey.trim()}',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: json.encode(<String, dynamic>{
+          'model': AppConfig.aiModel,
+          'messages': <Map<String, String>>[
+            <String, String>{
+              'role': 'system',
+              'content': systemPrompt,
+            },
+            <String, String>{
+              'role': 'user',
+              'content': prompt,
+            },
+          ],
+          'temperature': 0.7,
+          'max_tokens': maxTokens,
+        }),
+      ).timeout(const Duration(seconds: 30));
 
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> data = json.decode(response.body) as Map<String, dynamic>;
-          final List<dynamic> candidates = data['candidates'] as List<dynamic>? ?? <dynamic>[];
-          if (candidates.isNotEmpty) {
-            final String aiText = (((candidates.first as Map<String, dynamic>)['content'] as Map<String, dynamic>)['parts'] as List<dynamic>).first['text'] as String? ?? '';
-            if (aiText.isNotEmpty) return AiServiceResponse(status: true, message: 'สำเร็จ (Model: $model)', data: aiText);
-          }
-        } else if (response.statusCode == 404) {
-          continue;
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        if (data.containsKey('choices') && (data['choices'] as List<dynamic>).isNotEmpty) {
+          final String aiText = data['choices'][0]['message']['content'] as String? ?? '';
+          if (aiText.isNotEmpty) return AiServiceResponse(status: true, message: 'สำเร็จ (Model: ${AppConfig.aiModel})', data: aiText);
         }
-      } catch (e) {
-        continue;
+      } else {
+        debugPrint('⚠️ [AiService] Groq API returned status ${response.statusCode}: ${response.body}');
+        if (response.statusCode == 400) {
+          debugPrint('   Reason: Bad Request - check payload schema');
+        }
       }
+    } catch (e) {
+      debugPrint('⚠️ [AiService] Network/timeout error: $e');
     }
     return AiServiceResponse(status: false, message: 'ใช้ Offline Template', data: _getFallbackTemplate(role));
   }
@@ -362,38 +400,53 @@ $roleContext
 ''';
 
     try {
-      final String? apiKey = dotenv.env['GEMINI_API_KEY'] ?? AppConfig.geminiApiKey;
+      final String? apiKey = dotenv.env['GROQ_API_KEY'] ?? AppConfig.groqApiKey;
       if (apiKey == null || apiKey.isEmpty) {
         return 'สวัสดีครับ มีอะไรให้ผมช่วยเตรียมงานหรือจัดการตารางเรียน/งานวันนี้ไหมครับ';
       }
 
-      // Call Gemini API with dedicated chat prompt
-      final Uri uri = Uri.parse('$_geminiBaseUrl/${_modelPriority.first}:generateContent?key=$apiKey');
-      final String fullPrompt = '$chatSystemPrompt\n\nผู้ใช้: $message\n\nตอบ:';
+      // Call Groq Cloud API with dedicated chat prompt (OpenAI-Compatible)
+      final Uri uri = Uri.parse(_groqBaseUrl);
       
       final http.Response response = await http.post(
         uri,
-        headers: <String, String>{'Content-Type': 'application/json'},
+        headers: <String, String>{
+          'Authorization': 'Bearer ${apiKey.trim()}',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
         body: json.encode(<String, dynamic>{
-          'contents': <Map<String, dynamic>>[
-            <String, dynamic>{'role': 'user', 'parts': <Map<String, dynamic>>[<String, dynamic>{'text': fullPrompt}]},
+          'model': AppConfig.aiModel,
+          'messages': <Map<String, String>>[
+            <String, String>{
+              'role': 'system',
+              'content': chatSystemPrompt,
+            },
+            <String, String>{
+              'role': 'user',
+              'content': message,
+            },
           ],
-          'generationConfig': <String, dynamic>{'maxOutputTokens': 512, 'temperature': 0.7},
+          'temperature': 0.7,
+          'max_tokens': 512,
         }),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body) as Map<String, dynamic>;
-        final List<dynamic> candidates = data['candidates'] as List<dynamic>? ?? <dynamic>[];
-        if (candidates.isNotEmpty) {
-          final String aiText = (((candidates.first as Map<String, dynamic>)['content'] as Map<String, dynamic>)['parts'] as List<dynamic>).first['text'] as String? ?? '';
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        if (data.containsKey('choices') && (data['choices'] as List<dynamic>).isNotEmpty) {
+          final String aiText = data['choices'][0]['message']['content'] as String? ?? '';
           if (aiText.isNotEmpty) {
             return _sanitizeAiChatResponse(aiText);
           }
         }
+      } else {
+        debugPrint('⚠️ [AiService] Chat API returned status ${response.statusCode}: ${response.body}');
+        if (response.statusCode == 400) {
+          debugPrint('   Reason: Bad Request - check payload schema');
+        }
       }
     } catch (e) {
-      print('⚠️ Chat API error: $e');
+      debugPrint('⚠️ [AiService] Chat network/timeout error: $e');
     }
 
     return 'สวัสดีครับ มีอะไรให้ผมช่วยเตรียมงานหรือจัดการตารางเรียน/งานวันนี้ไหมครับ';

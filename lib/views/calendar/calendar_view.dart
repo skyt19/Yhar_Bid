@@ -17,7 +17,7 @@ class CalendarView extends StatelessWidget {
     final proactiveCtrl = Get.put(ProactiveController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCFD8DC),
+      backgroundColor: const Color(0xFFF5F5F5), // Light gray background
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -50,37 +50,41 @@ class CalendarView extends StatelessWidget {
     return Obx(() => Container(
           padding: const EdgeInsets.all(0),
           decoration: BoxDecoration(
-            color: const Color(0xFFCFD8DC),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white, // White calendar container
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF9E9E9E), width: 1.5), // Gray border
           ),
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: const BoxDecoration(
-                  color: Colors.black,
+                  color: Color(0xFFF5F5F5), // Light gray header
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFF9E9E9E), width: 1),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.chevron_left, color: Colors.black87, size: 28),
                       onPressed: () {},
                     ),
                     const Text(
                       'Calendar 2026 (month)',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black87, // Black text
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.chevron_right, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.chevron_right, color: Colors.black87, size: 28),
                       onPressed: () {},
                     ),
                   ],
@@ -89,8 +93,11 @@ class CalendarView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white, // White calendar table
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
                 ),
                 child: TableCalendar(
                   firstDay: DateTime.utc(2020, 1, 1),
@@ -99,24 +106,63 @@ class CalendarView extends StatelessWidget {
                   selectedDayPredicate: (day) => isSameDay(calCtrl.selectedDay.value, day),
                   onDaySelected: (selected, focused) => calCtrl.selectDay(selected, focused),
                   calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
+                    todayDecoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50), // Green highlight for today
                       shape: BoxShape.circle,
                     ),
                     selectedDecoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
+                      color: Color(0xFF2E7D32), // Dark green for selected
                       shape: BoxShape.circle,
                     ),
-                    // HIGH CONTRAST: White text on dark slate background
-                    defaultTextStyle: const TextStyle(color: Colors.white),
-                    weekendTextStyle: const TextStyle(color: Color(0xFFFCA5A5)),
-                    outsideTextStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                    // Black text on white background
+                    defaultTextStyle: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    weekendTextStyle: const TextStyle(
+                      color: Color(0xFF2E7D32), // Green for weekends
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    todayTextStyle: const TextStyle(
+                      color: Colors.white, // White text on green circle
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    selectedTextStyle: const TextStyle(
+                      color: Colors.white, // White text on green circle
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    outsideTextStyle: const TextStyle(
+                      color: Colors.black26, // Light gray for outside days
+                      fontSize: 13,
+                    ),
+                    markerDecoration: const BoxDecoration(
+                      color: Color(0xFF4CAF50), // Green dot marker
+                      shape: BoxShape.circle,
+                    ),
+                    markersMaxCount: 3,
+                    markerSize: 6.0,
                   ),
                   headerVisible: false,
                   daysOfWeekStyle: const DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    weekendStyle: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold),
+                    weekdayStyle: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    weekendStyle: TextStyle(
+                      color: Color(0xFF4CAF50), // Green for weekend labels
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
+                  eventLoader: (day) {
+                    // Show green dots on days with events or tasks
+                    return calCtrl.events.where((e) => isSameDay(e.startTime, day)).toList();
+                  },
                 ),
               ),
             ],
@@ -162,22 +208,25 @@ class CalendarView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: Color(0xFF1E293B),
+                color: Color(0xFFF5F5F5), // Light gray header
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
                 ),
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFF9E9E9E), width: 1),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.event_note, color: Colors.white, size: 20),
+                  const Icon(Icons.event_note, color: Colors.black87, size: 20),
                   const SizedBox(width: 8),
                   const Text(
                     'งานที่กำลังจะมาถึง',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.black87, // Black text
                     ),
                   ),
                   const Spacer(),
