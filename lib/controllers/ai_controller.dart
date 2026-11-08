@@ -56,4 +56,3 @@ class AiController extends GetxController {
   }
 
   void clearChat() => chatMessages.clear();
-}
