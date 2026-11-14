@@ -1,0 +1,11 @@
+# supabase/config.toml
+# Local Supabase project configuration for Yharbid.
+# Only the Edge Function runtime is used; Auth/DB/Storage stay with Firebase.
+
+[api]
+# port = 54321
+
+[functions.groq-proxy]
+# Disable Supabase's own JWT check — we perform Firebase ID Token verification
+# inside the function using Google's public certificates.
+verify_jwt = false

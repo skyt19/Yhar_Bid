@@ -27,11 +27,11 @@ class HabitCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: <BoxShadow>[
+        boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Color(0x14000000),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -55,7 +55,7 @@ class HabitCard extends StatelessWidget {
                   ),
                 ),
                 child: completedToday
-                    ? const Icon(Icons.check, color: Colors.white, size: 20)
+                    ? const Icon(Icons.check, color: AppTheme.textOnDark, size: 20)
                     : null,
               ),
             ),

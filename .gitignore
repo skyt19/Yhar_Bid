@@ -20,6 +20,13 @@ google-services.json
 GoogleService-Info.plist
 # Note: firebase_options.dart CAN be committed (Web API Keys are public)
 
+# Supabase secrets — never commit
+supabase/.env
+supabase/.env.*
+# Supabase local dev state
+supabase/.branches/
+supabase/.temp/
+
 # IDE
 .idea/
 *.iws

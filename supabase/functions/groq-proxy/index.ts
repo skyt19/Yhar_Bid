@@ -615,4 +615,11 @@ async function handler(req: Request): Promise<Response> {
 // Export for unit tests
 export { handler, validateBody, verifyFirebaseToken, getGoogleCerts, extractSpkiFromCertDer, _buildMinimalCertDer };
 
-Deno.serve(handler);
+// Only start the HTTP server when this module is the entry point.
+// When imported by tests (import("./index.ts")), import.meta.main is false,
+// so Deno.serve() does not run — preventing AddrInUse on repeated imports.
+// Supabase Edge Functions run index.ts as the entry point, so the server
+// starts normally in production.
+if (import.meta.main) {
+  Deno.serve(handler);
+}

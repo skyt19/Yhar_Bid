@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T00:00:00Z",
+  "title": "Design System: Yharbid",
+  "extensions": {
+    "colorMeta": {
+      "background-light": {
+        "role": "neutral",
+        "displayName": "Warm Light Gray",
+        "canonical": "#F5F5F5",
+        "tonalRamp": ["#1A1A1A", "#424242", "#757575", "#9E9E9E", "#BDBDBD", "#E0E0E0", "#F0F0F0", "#F5F5F5"]
+      },
+      "surface-white": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#1A1A1A", "#424242", "#757575", "#9E9E9E", "#E0E0E0", "#F0F0F0", "#F5F5F5", "#FFFFFF"]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Charcoal",
+        "canonical": "#1A1A1A",
+        "tonalRamp": ["#000000", "#1A1A1A", "#424242", "#616161", "#757575", "#9E9E9E", "#BDBDBD", "#E0E0E0"]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Mid Gray",
+        "canonical": "#757575",
+        "tonalRamp": ["#1A1A1A", "#424242", "#616161", "#757575", "#9E9E9E", "#BDBDBD", "#E0E0E0", "#F0F0F0"]
+      },
+      "accent-green": {
+        "role": "primary",
+        "displayName": "Meadow Green",
+        "canonical": "#4CAF50",
+        "tonalRamp": ["#1B5E20", "#2E7D32", "#388E3C", "#4CAF50", "#66BB6A", "#81C784", "#A5D6A7", "#C8E6C9"]
+      },
+      "accent-green-dark": {
+        "role": "primary",
+        "displayName": "Deep Forest Green",
+        "canonical": "#2E7D32",
+        "tonalRamp": ["#1B5E20", "#2E7D32", "#388E3C", "#43A047", "#4CAF50", "#66BB6A", "#81C784", "#A5D6A7"]
+      },
+      "accent-orange": {
+        "role": "secondary",
+        "displayName": "Warm Orange",
+        "canonical": "#FF9800",
+        "tonalRamp": ["#E65100", "#F57C00", "#FF6F00", "#FF9800", "#FFA726", "#FFB74D", "#FFCC80", "#FFE0B2"]
+      },
+      "accent-red": {
+        "role": "tertiary",
+        "displayName": "Alert Red",
+        "canonical": "#F44336",
+        "tonalRamp": ["#B71C1C", "#C62828", "#D32F2F", "#F44336", "#E57373", "#EF5350", "#EF9A9A", "#FFCDD2"]
+      }
+    },
+    "typographyMeta": {
+      "display-large": {
+        "displayName": "Display Large",
+        "purpose": "Hero headlines on dashboard and major views. Rare; ≤1 per screen."
+      },
+      "display-medium": {
+        "displayName": "Display Medium",
+        "purpose": "Section headlines, dialog titles."
+      },
+      "title-large": {
+        "displayName": "Title Large",
+        "purpose": "Card headers, prominent UI labels."
+      },
+      "title-medium": {
+        "displayName": "Title Medium",
+        "purpose": "Subsection headers, emphasized labels."
+      },
+      "body-large": {
+        "displayName": "Body Large",
+        "purpose": "Primary body text, task descriptions, longer content."
+      },
+      "body-medium": {
+        "displayName": "Body Medium",
+        "purpose": "Default UI text, list items, secondary content."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase micro-labels, form labels, captions requiring emphasis."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 2px 8px rgba(0,0,0,0.08)",
+        "purpose": "Standard white cards floating above gray background. Barely perceptible but provides separation."
+      },
+      {
+        "name": "elevated",
+        "value": "0 4px 16px rgba(0,0,0,0.12)",
+        "purpose": "Dialogs, bottom sheets, floating action buttons. Slightly stronger but still soft."
+      },
+      {
+        "name": "subtle",
+        "value": "0 1px 4px rgba(0,0,0,0.04)",
+        "purpose": "Navigation bar, sticky headers, minimal lift."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "0px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "desktop",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Standard action button with green background, used for affirmative primary actions.",
+      "html": "<button class=\"ds-btn-primary\">บันทึก</button>",
+      "css": ".ds-btn-primary { background: #4CAF50; color: #FFFFFF; padding: 12px 20px; border: none; border-radius: 8px; font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.18s ease-out; } .ds-btn-primary:hover { background: #43A047; } .ds-btn-primary:active { background: #388E3C; }"
+    },
+    {
+      "name": "Pill Button",
+      "kind": "button",
+      "refersTo": "button-pill",
+      "description": "Hero CTA button with white background and pill shape, used for prominent single actions like Google Sign-In.",
+      "html": "<button class=\"ds-btn-pill\">Google</button>",
+      "css": ".ds-btn-pill { background: #FFFFFF; color: #1A1A1A; padding: 16px 32px; border: none; border-radius: 30px; font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.18s ease-out, box-shadow 0.18s ease-out; } .ds-btn-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); } .ds-btn-pill:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action button with border, used for alternative or cancel actions.",
+      "html": "<button class=\"ds-btn-outlined\">ยกเลิก</button>",
+      "css": ".ds-btn-outlined { background: #FFFFFF; color: #1A1A1A; padding: 12px 20px; border: 1px solid #BDBDBD; border-radius: 8px; font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color 0.18s ease-out, background 0.18s ease-out; } .ds-btn-outlined:hover { border-color: #757575; background: #F5F5F5; } .ds-btn-outlined:active { background: #E0E0E0; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard white container with shadow, used for all content grouping.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">งานที่กำลังจะถึง</h3><p class=\"ds-card-body\">ไม่มีงานในระยะเวลานี้</p></div>",
+      "css": ".ds-card { background: #FFFFFF; padding: 16px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); } .ds-card-title { font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 18px; font-weight: 700; color: #1A1A1A; margin: 0 0 16px 0; } .ds-card-body { font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 14px; font-weight: 400; color: #757575; margin: 0; line-height: 1.5; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text field with border focus state.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"ชื่องาน\" />",
+      "css": ".ds-input { background: #FFFFFF; color: #1A1A1A; padding: 12px 16px; border: 1px solid #E0E0E0; border-radius: 12px; font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 14px; width: 100%; box-sizing: border-box; transition: border-color 0.18s ease-out; } .ds-input::placeholder { color: #9E9E9E; } .ds-input:focus { outline: none; border-color: #4CAF50; border-width: 1.5px; } .ds-input:disabled { background: #F0F0F0; color: #9E9E9E; }"
+    },
+    {
+      "name": "Navigation Button",
+      "kind": "custom",
+      "refersTo": "nav-button",
+      "description": "Circular white button with icon, used in bottom navigation. Active state shows green border and icon.",
+      "html": "<button class=\"ds-nav-btn\"><svg class=\"ds-nav-icon\" width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z\"/></svg></button>",
+      "css": ".ds-nav-btn { background: #FFFFFF; border: none; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: box-shadow 0.18s ease-out; } .ds-nav-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); } .ds-nav-btn.active { border: 2.5px solid #4CAF50; box-shadow: 0 2px 8px rgba(76,175,80,0.3); } .ds-nav-icon { color: #1A1A1A; width: 26px; height: 26px; } .ds-nav-btn.active .ds-nav-icon { color: #4CAF50; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill-shaped tag for filters and selections. Selected state uses green background.",
+      "html": "<div class=\"ds-chip\">Medium</div>",
+      "css": ".ds-chip { background: #FFFFFF; color: #1A1A1A; padding: 6px 12px; border: 1px solid #BDBDBD; border-radius: 30px; font-family: 'Noto Sans Thai', -apple-system, sans-serif; font-size: 13px; font-weight: 400; display: inline-flex; align-items: center; cursor: pointer; transition: background 0.18s ease-out, border-color 0.18s ease-out; } .ds-chip:hover { background: #F5F5F5; } .ds-chip.selected { background: #4CAF50; color: #FFFFFF; border-color: #4CAF50; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Warm Gray Workshop",
+    "overview": "Yharbid presents as a calm, neutral workspace built around warm grays and white surfaces, with green used sparingly as the sole accent color. The system prioritizes scanability and focus for productivity contexts (students, employees, educators managing calendars and tasks). Density is medium—not cramped, not spacious—optimized for information-rich screens without visual fatigue. The aesthetic is restrained and functional, avoiding decorative flourishes in favor of clear hierarchy and consistent patterns.\n\nBlue is explicitly banned from the palette. Status indicators, information callouts, and all accent uses draw from green, orange, red, or gray. The design accommodates Thai language typography as a first-class citizen alongside English, using Noto Sans Thai as the universal typeface.",
+    "keyCharacteristics": [
+      "Warm neutral foundation (#F5F5F5 background, white surfaces)",
+      "Single accent strategy: green only, used sparingly",
+      "Medium density with generous card padding",
+      "Bilingual Thai/English support via Noto Sans Thai",
+      "Circular navigation buttons with subtle shadow states"
+    ],
+    "rules": [
+      {
+        "name": "The No Blue Rule",
+        "body": "Blue tones are prohibited throughout the system. Information, status, and all accent uses draw from green, orange, red, or gray. This brand constraint overrides Material Design defaults.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sparing Accent Rule",
+        "body": "The green accent appears on ≤10% of any screen's surface area. Buttons, active icons, and selected states only—not backgrounds, not large containers.",
+        "section": "colors"
+      },
+      {
+        "name": "The Single Family Rule",
+        "body": "All text uses Noto Sans Thai. Hierarchy comes from size and weight variation, not family contrast.",
+        "section": "typography"
+      },
+      {
+        "name": "The Ambient Shadow Rule",
+        "body": "Shadows are diffuse and low-contrast (~4-12% black). No harsh drop shadows or high-offset effects. The goal is perceived depth, not dramatic elevation.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use warm gray (#F5F5F5) as the default scaffold background for all screens.",
+      "Do limit green accent usage to ≤10% of screen surface area—buttons, active icons, and selected states only.",
+      "Do maintain 16px minimum padding inside all cards and containers.",
+      "Do use pill-radius buttons (30px) for prominent single-action CTAs.",
+      "Do use Noto Sans Thai for all text to ensure Thai language support.",
+      "Do apply card shadow (0 2px 8px rgba(0,0,0,0.08)) to white containers floating on gray backgrounds.",
+      "Do use 1px borders in divider gray (#E0E0E0) for subtle separations; stronger borders (#BDBDBD) for outlined interactive elements."
+    ],
+    "donts": [
+      "Don't introduce blue tones anywhere in the UI. Use green, orange, red, or gray for all accents, status indicators, and information design.",
+      "Don't use green for large background areas or text passages. It's an accent, not a neutral.",
+      "Don't exceed 900px content width on desktop layouts. Maintain the centered column for scanability.",
+      "Don't use multiple font families. Noto Sans Thai covers both Latin and Thai scripts.",
+      "Don't apply harsh shadows or high-offset drop shadows. Keep blur radius ≤16px and opacity ≤12%.",
+      "Don't create custom radius values outside the documented scale (6px / 8px / 12px / 16px / 20px / 30px / 999px)."
+    ]
+  }
+}

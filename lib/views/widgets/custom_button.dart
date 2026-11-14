@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.textPrimary),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -67,7 +67,7 @@ class CustomButton extends StatelessWidget {
         );
       case AppButtonVariant.secondary:
         return ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: AppTheme.surfaceLight,
           foregroundColor: AppTheme.textPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusPill),
@@ -80,7 +80,7 @@ class CustomButton extends StatelessWidget {
       case AppButtonVariant.danger:
         return ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFEF5350),
-          foregroundColor: Colors.white,
+          foregroundColor: AppTheme.textOnDark,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusPill),
           ),

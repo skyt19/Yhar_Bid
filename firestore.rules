@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User-owned prepared plans with per-step completion tracking
+    match /preparedPlans/{userId}/plans/{planId} {
+      // Read: owner only
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Create: owner only, must be authenticated
+      allow create: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.userId == userId;
+
+      // Update: owner only, for step completion and plan completion
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.userId == userId;
+
+      // Delete: owner only
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

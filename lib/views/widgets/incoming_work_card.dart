@@ -20,38 +20,28 @@ class IncomingWorkCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppTheme.shadowCard,
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppTheme.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.event_available, color: AppTheme.accentGreen, size: 24),
-              const SizedBox(width: 8),
+              const Icon(Icons.event_available, color: AppTheme.accentGreen, size: 24),
+              const SizedBox(width: AppTheme.space8),
               Text(
                 'incoming_work'.tr,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
+                style: AppTheme.title18,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.space16),
           Obx(() {
             if (calendarCtrl.isLoading.value) {
               return const Center(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(AppTheme.space20),
                   child: CircularProgressIndicator(),
                 ),
               );
@@ -71,13 +61,10 @@ class IncomingWorkCard extends StatelessWidget {
             if (upcomingEvents.isEmpty) {
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppTheme.space20),
                   child: Text(
                     'no_tasks'.tr,
-                    style: const TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 14,
-                    ),
+                    style: AppTheme.bodyMedium,
                   ),
                 ),
               );
@@ -109,13 +96,13 @@ class IncomingWorkCard extends StatelessWidget {
             : '${timeUntil.inDays} ${'days_left'.tr}';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: AppTheme.space8),
+      padding: const EdgeInsets.all(AppTheme.space12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         border: Border.all(
-          color: timeUntil.inHours < 24 ? Colors.red.shade300 : Colors.blue.shade200,
+          color: timeUntil.inHours < 24 ? AppTheme.accentRed.withValues(alpha: 0.6) : AppTheme.accentGray,
           width: 1.5,
         ),
       ),
@@ -125,50 +112,42 @@ class IncomingWorkCard extends StatelessWidget {
             width: 4,
             height: 40,
             decoration: BoxDecoration(
-              color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentGreen,
-              borderRadius: BorderRadius.circular(2),
+              color: timeUntil.inHours < 24 ? AppTheme.accentRed : AppTheme.accentGreen,
+              borderRadius: BorderRadius.circular(AppTheme.space2),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppTheme.space12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   event.title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
+                  style: AppTheme.body15.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppTheme.space4),
                 Text(
                   dateFormat.format(event.startTime),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: AppTheme.body13.copyWith(color: AppTheme.textSecondary),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.space8, vertical: AppTheme.space4),
             decoration: BoxDecoration(
               color: timeUntil.inHours < 24
-                  ? Colors.red.withValues(alpha: 0.1)
+                  ? AppTheme.accentRed.withValues(alpha: 0.1)
                   : AppTheme.accentGreen.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
             child: Text(
               urgencyLabel,
-              style: TextStyle(
-                fontSize: 12,
+              style: AppTheme.bodySmall.copyWith(
                 fontWeight: FontWeight.bold,
-                color: timeUntil.inHours < 24 ? Colors.red : AppTheme.accentGreen,
+                color: timeUntil.inHours < 24 ? AppTheme.accentRed : AppTheme.accentGreen,
               ),
             ),
           ),

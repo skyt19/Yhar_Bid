@@ -17,6 +17,7 @@ dependencies:
   firebase_core: ^2.27.0
   cloud_firestore: ^4.15.0
   firebase_auth: ^4.17.0
+  firebase_storage: ^11.6.0
 
   # Google Sign-In & Calendar
   google_sign_in: ^6.2.1
@@ -41,6 +42,7 @@ dependencies:
 
   # Persistent Storage
   get_storage: ^2.1.1
+  shared_preferences: ^2.2.2
 
   # Icons
   cupertino_icons: ^1.0.6

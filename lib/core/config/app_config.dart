@@ -1,217 +1,131 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// AppConfig - Central Configuration Management with Built-in Fallback
-/// 
-/// Priority Order:
-/// 1. Environment variables from .env file (dotenv)
-/// 2. Built-in fallback constants (MUST BE CONFIGURED)
-/// 
-/// ⚠️ IMPORTANT: Replace fallback values with your actual keys
-/// This ensures 100% runtime stability even without .env file.
+/// AppConfig - Central Configuration Management
+///
+/// The Groq API key is NO LONGER loaded by the client.
+/// Groq requests are proxied through a Supabase Edge Function
+/// (lib/services/ai_service.dart) that holds the key server-side.
+///
+/// Remaining client-side configuration:
+///   - Supabase publishable key (safe to expose; identifies the project)
+///   - Firebase project ID (already public via firebase_options.dart)
+///   - Google OAuth client ID (already public; embedded for web OAuth)
 class AppConfig {
   // ============================================
-  // BUILT-IN FALLBACK SECRETS (CONFIGURE THESE!)
+  // CLIENT-SAFE CONFIGURATION
   // ============================================
-  
-  /// ⚠️ PRODUCTION CONFIGURATION: These values are used when .env is unavailable
-  /// (e.g., Flutter Web Release builds on Firebase Hosting)
-  /// 
-  /// Security Note: Web apps expose client-side code anyway, so storing
-  /// API keys here is acceptable for Firebase/Google services with proper
-  /// security rules. For sensitive backend APIs, use Firebase Functions instead.
-  /// 
-  /// Get your keys from:
-  /// - Groq Cloud: https://console.groq.com/keys
-  /// - Google OAuth: https://console.cloud.google.com/apis/credentials
-  static const String _FALLBACK_GROQ_API_KEY = 
-      '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';
-  
-  static const String _FALLBACK_AI_MODEL = 'openai/gpt-oss-20b';
-  
-  static const String _FALLBACK_GOOGLE_CLIENT_ID = 
+
+  /// Supabase publishable (anon) key.
+  /// Safe to ship in the client: it only identifies the project to the
+  /// Supabase gateway; Row Level Security / function-side Firebase token
+  /// verification enforce access control.
+  /// Hardcoded as fallback because .env may not load in release web builds.
+  static const String _FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+      'sb_publishable_1DdTR3XEL4RlTjAeMSOsag_ZBmIZpsv';
+
+  /// Supabase project URL (public — identifies the project endpoint).
+  static const String _FALLBACK_SUPABASE_URL =
+      'https://aanochhlejpbhdhkgjpx.supabase.co';
+
+  /// Firebase project ID (public — also in lib/firebase_options.dart).
+  static const String _FALLBACK_FIREBASE_PROJECT_ID = 'yhar-bid';
+
+  /// Google OAuth Client ID (public for web OAuth).
+  static const String _FALLBACK_GOOGLE_CLIENT_ID =
       '197558461101-fpvs52hlfg76po4c5bmufqotpr962hf6.apps.googleusercontent.com';
-  
-  static const String _FALLBACK_GOOGLE_CLIENT_SECRET = 
-      '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';
 
   // ============================================
-  // PUBLIC GETTERS (with Fallback Logic)
+  // PUBLIC GETTERS
   // ============================================
 
-  /// Groq Cloud API Key (AI Service)
-  /// Priority: .env -> Fallback constant
-  /// NEVER throws exceptions - returns placeholder if not configured
-  static String get groqApiKey {
+  /// Supabase publishable key.
+  /// Priority: .env -> fallback constant.
+  static String get supabasePublishableKey {
     try {
-      final String? envKey = dotenv.env['GROQ_API_KEY'];
-      if (envKey != null && envKey.isNotEmpty) {
-        return envKey;
-      }
+      final String? envKey = dotenv.env['SUPABASE_PUBLISHABLE_KEY'];
+      if (envKey != null && envKey.isNotEmpty) return envKey;
     } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading GROQ_API_KEY from dotenv: $e');
+      debugPrint('⚠️ [AppConfig] Error reading SUPABASE_PUBLISHABLE_KEY: $e');
     }
-    
-    if (_FALLBACK_GROQ_API_KEY.startsWith('YOUR_')) {
-      debugPrint('❌ [AppConfig] GROQ_API_KEY not configured! AI features will be disabled.');
-      return 'UNCONFIGURED_GROQ_KEY';
-    }
-    debugPrint('⚠️ [AppConfig] GROQ_API_KEY not found in .env, using built-in fallback');
-    return _FALLBACK_GROQ_API_KEY;
+    debugPrint('⚠️ [AppConfig] SUPABASE_PUBLISHABLE_KEY using fallback');
+    return _FALLBACK_SUPABASE_PUBLISHABLE_KEY;
   }
 
-  /// AI Model Name (Groq Model ID)
-  /// Priority: .env -> Fallback constant
+  /// Supabase project URL (public).
+  /// Priority: .env -> fallback constant.
+  static String get supabaseUrl {
+    try {
+      final String? envUrl = dotenv.env['SUPABASE_URL'];
+      if (envUrl != null && envUrl.isNotEmpty) return envUrl;
+    } catch (_) {
+      // ignore
+    }
+    return _FALLBACK_SUPABASE_URL;
+  }
+
+  /// Firebase project ID (public).
+  static String get firebaseProjectId {
+    try {
+      final String? envId = dotenv.env['FIREBASE_PROJECT_ID'];
+      if (envId != null && envId.isNotEmpty) return envId;
+    } catch (_) {
+      // ignore
+    }
+    return _FALLBACK_FIREBASE_PROJECT_ID;
+  }
+
+  /// AI Model Name (Groq Model ID) — LOCKED, client-side reference only.
+  /// The proxy ignores any client-supplied model and uses this constant.
+  static const String _FALLBACK_AI_MODEL = 'openai/gpt-oss-20b';
+
   static String get aiModel {
     try {
       final String? envModel = dotenv.env['AI_MODEL'];
-      if (envModel != null && envModel.isNotEmpty) {
-        return envModel;
-      }
-    } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading AI_MODEL from dotenv: $e');
+      if (envModel != null && envModel.isNotEmpty) return envModel;
+    } catch (_) {
+      // ignore
     }
-    debugPrint('⚠️ [AppConfig] AI_MODEL not found in .env, using built-in fallback');
     return _FALLBACK_AI_MODEL;
   }
 
-  /// Google OAuth Client ID
-  /// Priority: .env -> Fallback constant
-  /// NEVER throws exceptions - returns placeholder if not configured
+  /// Google OAuth Client ID (public for web OAuth).
   static String get googleClientId {
     try {
       final String? envId = dotenv.env['GOOGLE_CLIENT_ID'];
-      if (envId != null && envId.isNotEmpty) {
-        return envId;
-      }
-    } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading GOOGLE_CLIENT_ID from dotenv: $e');
+      if (envId != null && envId.isNotEmpty) return envId;
+    } catch (_) {
+      // ignore
     }
-    
-    if (_FALLBACK_GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
-      debugPrint('❌ [AppConfig] GOOGLE_CLIENT_ID not configured! Google Sign-In will be disabled.');
-      return 'UNCONFIGURED_CLIENT_ID';
-    }
-    debugPrint('⚠️ [AppConfig] GOOGLE_CLIENT_ID not found in .env, using built-in fallback');
     return _FALLBACK_GOOGLE_CLIENT_ID;
-  }
-
-  /// Google OAuth Client Secret
-  /// Priority: .env -> Fallback constant
-  /// NEVER throws exceptions - returns placeholder if not configured
-  static String get googleClientSecret {
-    try {
-      final String? envSecret = dotenv.env['GOOGLE_CLIENT_SECRET'];
-      if (envSecret != null && envSecret.isNotEmpty) {
-        return envSecret;
-      }
-    } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading GOOGLE_CLIENT_SECRET from dotenv: $e');
-    }
-    
-    if (_FALLBACK_GOOGLE_CLIENT_SECRET.startsWith('YOUR_')) {
-      debugPrint('❌ [AppConfig] GOOGLE_CLIENT_SECRET not configured! Calendar sync will be disabled.');
-      return 'UNCONFIGURED_CLIENT_SECRET';
-    }
-    debugPrint('⚠️ [AppConfig] GOOGLE_CLIENT_SECRET not found in .env, using built-in fallback');
-    return _FALLBACK_GOOGLE_CLIENT_SECRET;
   }
 
   // ============================================
   // INITIALIZATION CHECK
   // ============================================
 
-  /// Validate configuration on app startup
-  /// NEVER throws exceptions - only logs warnings
+  /// Validate configuration on app startup.
+  /// NEVER throws exceptions - only logs warnings.
   static void validate() {
     debugPrint('🔧 [AppConfig] Validating configuration...');
-    
-    bool hasEnvGroq = false;
-    bool hasEnvClientId = false;
-    bool hasEnvClientSecret = false;
-    
-    try {
-      hasEnvGroq = dotenv.env['GROQ_API_KEY'] != null && dotenv.env['GROQ_API_KEY']!.isNotEmpty;
-      hasEnvClientId = dotenv.env['GOOGLE_CLIENT_ID'] != null && dotenv.env['GOOGLE_CLIENT_ID']!.isNotEmpty;
-      hasEnvClientSecret = dotenv.env['GOOGLE_CLIENT_SECRET'] != null && dotenv.env['GOOGLE_CLIENT_SECRET']!.isNotEmpty;
-    } catch (e) {
-      debugPrint('⚠️ [AppConfig] Error reading .env: $e');
-    }
-    
-    if (!hasEnvGroq || !hasEnvClientId || !hasEnvClientSecret) {
-      debugPrint('⚠️ [AppConfig] Some keys missing from .env, checking fallbacks:');
-      if (!hasEnvGroq) {
-        if (_FALLBACK_GROQ_API_KEY.startsWith('YOUR_')) {
-          debugPrint('  ❌ GROQ_API_KEY: NOT CONFIGURED');
-        } else {
-          debugPrint('  ✅ GROQ_API_KEY: FALLBACK OK');
-        }
-      }
-      if (!hasEnvClientId) {
-        if (_FALLBACK_GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
-          debugPrint('  ❌ GOOGLE_CLIENT_ID: NOT CONFIGURED');
-        } else {
-          debugPrint('  ✅ GOOGLE_CLIENT_ID: FALLBACK OK');
-        }
-      }
-      if (!hasEnvClientSecret) {
-        if (_FALLBACK_GOOGLE_CLIENT_SECRET.startsWith('YOUR_')) {
-          debugPrint('  ❌ GOOGLE_CLIENT_SECRET: NOT CONFIGURED');
-        } else {
-          debugPrint('  ✅ GOOGLE_CLIENT_SECRET: FALLBACK OK');
-        }
-      }
+    final supa = supabasePublishableKey;
+    if (supa.isEmpty) {
+      debugPrint('  ❌ SUPABASE_PUBLISHABLE_KEY empty — AI proxy will fail');
     } else {
-      debugPrint('✅ [AppConfig] All keys loaded from .env successfully');
+      debugPrint('  ✅ SUPABASE_PUBLISHABLE_KEY configured');
     }
-    
-    debugPrint('✅ [AppConfig] Configuration validated successfully');
+    debugPrint('  ✅ Firebase project: $firebaseProjectId');
+    debugPrint('  ✅ AI model (locked): $aiModel');
+    debugPrint('✅ [AppConfig] Configuration validated');
   }
 
-  // ============================================
-  // DEBUG INFO
-  // ============================================
-
-  /// Print configuration status (for debugging)
-  /// NEVER throws exceptions - safe for production
+  /// Print configuration status (safe for production — no secrets).
   static void printStatus() {
-    debugPrint('📊 [AppConfig] Current Configuration Status:');
-    try {
-      final String groqKey = groqApiKey;
-      if (groqKey == 'UNCONFIGURED_GROQ_KEY') {
-        debugPrint('  Groq API Key: NOT CONFIGURED');
-      } else {
-        debugPrint('  Groq API Key: ${groqKey.substring(0, groqKey.length > 20 ? 20 : groqKey.length)}...');
-      }
-    } catch (e) {
-      debugPrint('  Groq API Key: ERROR - $e');
-    }
-    try {
-      final String model = aiModel;
-      debugPrint('  AI Model: $model');
-    } catch (e) {
-      debugPrint('  AI Model: ERROR - $e');
-    }
-    try {
-      final String clientId = googleClientId;
-      if (clientId == 'UNCONFIGURED_CLIENT_ID') {
-        debugPrint('  Google Client ID: NOT CONFIGURED');
-      } else {
-        debugPrint('  Google Client ID: ${clientId.substring(0, clientId.length > 30 ? 30 : clientId.length)}...');
-      }
-    } catch (e) {
-      debugPrint('  Google Client ID: ERROR - $e');
-    }
-    try {
-      final String clientSecret = googleClientSecret;
-      if (clientSecret == 'UNCONFIGURED_CLIENT_SECRET') {
-        debugPrint('  Google Client Secret: NOT CONFIGURED');
-      } else {
-        debugPrint('  Google Client Secret: ${clientSecret.substring(0, clientSecret.length > 15 ? 15 : clientSecret.length)}...');
-      }
-    } catch (e) {
-      debugPrint('  Google Client Secret: ERROR - $e');
-    }
+    debugPrint('📊 [AppConfig] Configuration Status:');
+    debugPrint('  Supabase publishable key: configured');
+    debugPrint('  Firebase project: $firebaseProjectId');
+    debugPrint('  AI model: $aiModel (locked, enforced server-side)');
+    debugPrint('  Groq API key: server-side only (not in client)');
   }
 }
 

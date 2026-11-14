@@ -1,0 +1,7 @@
+# supabase secrets — never commit
+.env
+.env.*
+!.env.example
+# Supabase local db data
+.branches/
+.temp/

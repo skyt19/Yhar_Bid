@@ -17,11 +17,11 @@ class AgendaCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-        boxShadow: <BoxShadow>[
+        boxShadow: const <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Color(0x14000000),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -65,7 +65,7 @@ class AgendaCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentGreen.withOpacity(0.15),
+                    color: AppTheme.accentGreen.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -92,12 +92,12 @@ class AgendaCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.15),
+                      color: AppTheme.accentOrange.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       '⚠️ ใช้ Template สำรอง (ออฟไลน์)',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                      style: TextStyle(fontSize: 12, color: AppTheme.accentOrange),
                     ),
                   ),
                 ...preparation.contentItems.map((String item) => Padding(

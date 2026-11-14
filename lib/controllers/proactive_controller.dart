@@ -3,6 +3,7 @@
 /// ตาม FR-3, NFR-6: Proactive Secretary & User Review Flow
 
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/calendar_event_model.dart';
 import '../models/user_model.dart';
 import '../models/task_preparation_model.dart';
@@ -13,6 +14,7 @@ import '../controllers/auth_controller.dart';
 import '../controllers/calendar_controller.dart';
 import '../controllers/task_controller.dart';
 import '../controllers/analytics_controller.dart';
+import '../controllers/prepared_plan_controller.dart';
 
 /// สถานะของการเตรียมงาน
 enum PreparationStatus {
@@ -73,6 +75,10 @@ class ProactiveController extends GetxController {
   /// Getter: รายการข้อเสนอที่รอตรวจสอบ (Pending Proposals)
   List<PreparationProposal> get pendingProposals =>
       proposals.where((PreparationProposal p) => p.status == PreparationStatus.pending).toList();
+
+  /// Getter: รายการข้อเสนอที่อนุมัติแล้ว (Approved Proposals)
+  List<PreparationProposal> get approvedProposals =>
+      proposals.where((PreparationProposal p) => p.status == PreparationStatus.approved).toList();
 
 
   /// รัน Proactive Scan: สแกนปฎิทินและสร้างข้อเสนอจาก AI
@@ -155,17 +161,23 @@ class ProactiveController extends GetxController {
             role: user.role,
           );
 
+          // Check if result is fallback template (not real AI response)
+          final bool isFallback = aiResult['_fallback'] == true;
+          if (isFallback) {
+            print('⚠️ [ProactiveController] Using fallback template for ${event.title} (Groq API unavailable)');
+          }
+
           // Extract action_items from JSON response
           final List<String> actionItems = (aiResult['action_items'] as List<dynamic>?)
               ?.map((item) => item.toString()).toList() ?? <String>[];
           final String summary = aiResult['summary'] as String? ?? event.title;
           final String notification = aiResult['notification'] as String? ?? 'อย่าลืมเตรียมตัว';
 
-          // สร้าง Proposal
+          // สร้าง Proposal (mark if it's from fallback)
           final PreparationProposal proposal = PreparationProposal(
             id: '${event.id}_${DateTime.now().millisecondsSinceEpoch}',
             event: event,
-            aiContent: summary,
+            aiContent: isFallback ? '⚠️ [Offline Template]\n\n$summary' : summary,
             status: PreparationStatus.pending,
             createdAt: DateTime.now(),
             suggestedTasks: actionItems,
@@ -238,18 +250,31 @@ class ProactiveController extends GetxController {
       // อัปเดตสถานะเป็น Approved
       proposals[index] = proposal.copyWith(status: PreparationStatus.approved);
 
-      // 1. ซิงค์กลับไป Google Calendar (อัปเดต Description)
+      // 1. สร้าง PreparedPlan จาก approved proposal
+      final preparedPlanCtrl = Get.find<PreparedPlanController>();
+      final bool planCreated = await preparedPlanCtrl.createPlanFromProposal(proposal);
+
+      if (!planCreated) {
+        // Revert status on failure
+        proposals[index] = proposal;
+        return;
+      }
+
+      // 2. ซิงค์กลับไป Google Calendar (อัปเดต Description)
       await _syncToGoogleCalendar(proposal);
 
-      // 2. สร้าง Sub-tasks ใน Task Tracker (ถ้ามี)
+      // 3. สร้าง Sub-tasks ใน Task Tracker (ถ้ามี)
       if (proposal.suggestedTasks.isNotEmpty) {
         await _createTasksFromProposal(proposal);
       }
 
       Get.snackbar(
-        'สำเร็จ',
-        'อนุมัติและซิงค์ข้อมูลเรียบร้อยแล้ว',
+        'บันทึกแผนแล้ว',
+        'ดูแผนเตรียมงานใน Tasks → แผนเตรียมงาน',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.primary,
+        colorText: Get.theme.colorScheme.onPrimary,
+        duration: const Duration(seconds: 3),
       );
     } catch (e) {
       Get.snackbar('ข้อผิดพลาด', 'ไม่สามารถอนุมัติได้: ${e.toString()}',
@@ -321,31 +346,38 @@ ${proposal.aiContent}
   ) async {
     try {
       final TaskController taskCtrl = Get.find<TaskController>();
-      
+
       // STRICT DEDUPLICATION: Check if task for this EXACT event.id already exists
       // Search by Event ID marker (most reliable) OR exact title match
-      final bool taskExists = taskCtrl.tasks.any((task) => 
-        task.description.contains('Event ID: ${event.id}') || 
+      final bool taskExists = taskCtrl.tasks.any((task) =>
+        task.description.contains('Event ID: ${event.id}') ||
         (task.title == event.title && task.dueDate?.isAtSameMomentAs(event.startTime) == true));
-      
+
       if (taskExists) {
         print('⚠️ [ProactiveController] Task for event "${event.title}" (ID: ${event.id}) already exists. Skipping duplicate.');
         return;
       }
-      
+
       // Consolidate ALL action items into a single description (no separate task cards per bullet)
       final String consolidatedOutline = actionItems.isNotEmpty
           ? '**AI Preparation Outline:**\n\n${actionItems.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join('\n')}\n\n---\nEvent ID: ${event.id}'
           : 'เตรียมตัวสำหรับ: ${event.title}\n\n---\nEvent ID: ${event.id}';
-      
-      // Create EXACTLY ONE task card per event (never loop through actionItems to create separate tasks)
-      await taskCtrl.addTask(
+
+      // CRITICAL: Call addTask and check result
+      final bool success = await taskCtrl.addTask(
         title: event.title,
         description: consolidatedOutline,
         dueDate: event.startTime,
         category: 'งานทั่วไป',
         priority: 'Medium',
       );
+
+      if (!success) {
+        print('❌ [ProactiveController] Failed to create task for event: "${event.title}"');
+        print('   This is likely a permission error. Check Firebase Auth state.');
+        // Don't throw exception - let the process continue for other events
+        return;
+      }
 
       // Recalculate FR-6 analytics metrics
       try {
@@ -356,8 +388,21 @@ ${proposal.aiContent}
       }
 
       print('✅ [ProactiveController] Created 1 consolidated task for event: "${event.title}" (ID: ${event.id})');
+    } on FirebaseException catch (e) {
+      print('❌ [ProactiveController] FirebaseException in auto-populate: ${e.code} - ${e.message}');
+      if (e.code == 'permission-denied') {
+        print('   → Permission Denied: User may need to re-authenticate');
+        Get.snackbar(
+          'ข้อผิดพลาดสิทธิ์',
+          'ไม่สามารถบันทึกงานได้ กรุณาเข้าสู่ระบบใหม่',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 5),
+        );
+      }
+      // Don't rethrow - continue processing other events
     } catch (e) {
       print('⚠️ [ProactiveController] Failed to auto-populate task: $e');
+      // Don't rethrow - allow workflow to continue
     }
   }
 

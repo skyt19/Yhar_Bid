@@ -1,3 +1,6 @@
+/// lib/views/calendar/calendar_view.dart
+/// Calendar Screen — Month view, upcoming events, day detail
+/// Operate mode: warm neutral, green accent, clean scan-first layout
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -6,6 +9,7 @@ import '../../controllers/calendar_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/proactive_controller.dart';
 import '../../models/calendar_event_model.dart';
+import '../theme/app_theme.dart';
 
 class CalendarView extends StatelessWidget {
   const CalendarView({super.key});
@@ -17,393 +21,185 @@ class CalendarView extends StatelessWidget {
     final proactiveCtrl = Get.put(ProactiveController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Light gray background
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: AppTheme.backgroundLight,
+      body: SafeArea(
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildCalendar(calCtrl),
-              const SizedBox(height: 20),
-              Obx(() {
-                if (authCtrl.currentUser.value == null) {
-                  return _buildSignInSection(authCtrl);
-                }
-                return Column(
-                  children: [
-                    _buildUpcomingTasksCard(calCtrl, proactiveCtrl),
-                    const SizedBox(height: 16),
-                    _buildWeeklySummaryCard(calCtrl),
-                    const SizedBox(height: 16),
-                    _buildSelectedDayEventsCard(calCtrl, proactiveCtrl),
-                  ],
-                );
-              }),
-            ],
+          padding: const EdgeInsets.all(AppTheme.space16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: AppTheme.contentMaxWidth),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildCalendar(calCtrl),
+                  const SizedBox(height: AppTheme.space20),
+                  Obx(() {
+                    if (authCtrl.currentUser.value == null) {
+                      return _buildSignInSection(authCtrl);
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildWeeklySummaryCard(calCtrl),
+                        const SizedBox(height: AppTheme.space16),
+                        _buildUpcomingEventsCard(calCtrl, proactiveCtrl),
+                        const SizedBox(height: AppTheme.space16),
+                        _buildSelectedDayCard(calCtrl, proactiveCtrl),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: AppTheme.space80),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
+  // ─── Calendar widget ──────────────────────────────────────────────────────
+
   Widget _buildCalendar(CalendarController calCtrl) {
     return Obx(() => Container(
-          padding: const EdgeInsets.all(0),
-          decoration: BoxDecoration(
-            color: Colors.white, // White calendar container
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF9E9E9E), width: 1.5), // Gray border
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF5F5F5), // Light gray header
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFF9E9E9E), width: 1),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chevron_left, color: Colors.black87, size: 28),
-                      onPressed: () {},
-                    ),
-                    const Text(
-                      'Calendar 2026 (month)',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87, // Black text
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.chevron_right, color: Colors.black87, size: 28),
-                      onPressed: () {},
-                    ),
-                  ],
+          decoration: AppTheme.cardDecoration,
+          child: TableCalendar(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: calCtrl.focusedDay.value,
+            selectedDayPredicate: (day) =>
+                isSameDay(calCtrl.selectedDay.value, day),
+            onDaySelected: (selected, focused) =>
+                calCtrl.selectDay(selected, focused),
+            onPageChanged: (focused) => calCtrl.focusedDay.value = focused,
+            calendarStyle: CalendarStyle(
+              todayDecoration: const BoxDecoration(
+                color: AppTheme.accentGreen,
+                shape: BoxShape.circle,
+              ),
+              selectedDecoration: const BoxDecoration(
+                color: AppTheme.accentGreenDark,
+                shape: BoxShape.circle,
+              ),
+              defaultTextStyle: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              weekendTextStyle: const TextStyle(
+                color: AppTheme.accentGreenDark,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              todayTextStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+              selectedTextStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+              outsideTextStyle: const TextStyle(
+                color: AppTheme.textTertiary,
+                fontSize: 13,
+              ),
+              markerDecoration: const BoxDecoration(
+                color: AppTheme.accentGreen,
+                shape: BoxShape.circle,
+              ),
+              markersMaxCount: 3,
+              markerSize: 5.0,
+              cellMargin: const EdgeInsets.all(4),
+            ),
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              headerPadding: const EdgeInsets.symmetric(
+                  vertical: AppTheme.space12,
+                  horizontal: AppTheme.space16),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceLight,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(AppTheme.radiusLarge),
+                  topRight: Radius.circular(AppTheme.radiusLarge),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white, // White calendar table
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(12),
-                    bottomRight: Radius.circular(12),
-                  ),
-                ),
-                child: TableCalendar(
-                  firstDay: DateTime.utc(2020, 1, 1),
-                  lastDay: DateTime.utc(2030, 12, 31),
-                  focusedDay: calCtrl.focusedDay.value,
-                  selectedDayPredicate: (day) => isSameDay(calCtrl.selectedDay.value, day),
-                  onDaySelected: (selected, focused) => calCtrl.selectDay(selected, focused),
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50), // Green highlight for today
-                      shape: BoxShape.circle,
-                    ),
-                    selectedDecoration: const BoxDecoration(
-                      color: Color(0xFF2E7D32), // Dark green for selected
-                      shape: BoxShape.circle,
-                    ),
-                    // Black text on white background
-                    defaultTextStyle: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    weekendTextStyle: const TextStyle(
-                      color: Color(0xFF2E7D32), // Green for weekends
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    todayTextStyle: const TextStyle(
-                      color: Colors.white, // White text on green circle
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    selectedTextStyle: const TextStyle(
-                      color: Colors.white, // White text on green circle
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    outsideTextStyle: const TextStyle(
-                      color: Colors.black26, // Light gray for outside days
-                      fontSize: 13,
-                    ),
-                    markerDecoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50), // Green dot marker
-                      shape: BoxShape.circle,
-                    ),
-                    markersMaxCount: 3,
-                    markerSize: 6.0,
-                  ),
-                  headerVisible: false,
-                  daysOfWeekStyle: const DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                    weekendStyle: TextStyle(
-                      color: Color(0xFF4CAF50), // Green for weekend labels
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  eventLoader: (day) {
-                    // Show green dots on days with events or tasks
-                    return calCtrl.events.where((e) => isSameDay(e.startTime, day)).toList();
-                  },
-                ),
+              titleTextStyle: AppTheme.titleSmall,
+              leftChevronIcon: const Icon(
+                Icons.chevron_left_rounded,
+                color: AppTheme.textSecondary,
+                size: 22,
               ),
-            ],
+              rightChevronIcon: const Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.textSecondary,
+                size: 22,
+              ),
+            ),
+            daysOfWeekStyle: const DaysOfWeekStyle(
+              weekdayStyle: TextStyle(
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+              weekendStyle: TextStyle(
+                color: AppTheme.accentGreenDark,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+            eventLoader: (day) =>
+                calCtrl.events.where((e) => isSameDay(e.startTime, day)).toList(),
           ),
         ));
   }
 
-  /// SPECIFICATION #4: "Upcoming Tasks" Card
-  /// Display upcoming events (today + next 14 days) with AI preparation button
-  Widget _buildUpcomingTasksCard(CalendarController calCtrl, ProactiveController proactiveCtrl) {
-    return Obx(() {
-      final DateTime now = DateTime.now();
-      final DateTime twoWeeksLater = now.add(const Duration(days: 14));
-      final List<CalendarEventModel> upcomingEvents = calCtrl.events
-          .where((CalendarEventModel e) => 
-              e.startTime.isAfter(now) && e.startTime.isBefore(twoWeeksLater))
-          .toList();
+  // ─── Weekly summary ───────────────────────────────────────────────────────
 
-      if (upcomingEvents.isEmpty) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Center(
-            child: Text(
-              'ไม่มีงานที่กำลังจะมาถึง',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ),
-        );
-      }
-
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F5F5), // Light gray header
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFF9E9E9E), width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.event_note, color: Colors.black87, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'งานที่กำลังจะมาถึง',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87, // Black text
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${upcomingEvents.length} งาน',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF4CAF50),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: upcomingEvents.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final CalendarEventModel event = upcomingEvents[index];
-                final DateFormat dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dateFormatter.format(event.startTime),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Hide AI preparation button for read-only/holiday events
-                      if (!event.isReadOnly)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              proactiveCtrl.runProactiveScan(specificEventId: event.id);
-                            },
-                            icon: const Icon(Icons.auto_awesome, size: 16),
-                            label: const Text('ให้เลขา AI เตรียมงาน'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4CAF50),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF9C4),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFFBC02D)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.event_busy, size: 14, color: Color(0xFFF57F17)),
-                              SizedBox(width: 4),
-                              Text(
-                                'วันหยุด / ปฏิทินอ่านอย่างเดียว',
-                                style: TextStyle(fontSize: 11, color: Color(0xFFF57F17), fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  /// SPECIFICATION #4: "Tasks Within Week" Summary Card
-  /// Display event count and weekly adherence metrics
   Widget _buildWeeklySummaryCard(CalendarController calCtrl) {
     return Obx(() {
-      final DateTime now = DateTime.now();
-      final DateTime weekLater = now.add(const Duration(days: 7));
-      final List<CalendarEventModel> weekEvents = calCtrl.events
-          .where((CalendarEventModel e) => 
-              e.startTime.isAfter(now) && e.startTime.isBefore(weekLater))
+      final now = DateTime.now();
+      final weekLater = now.add(const Duration(days: 7));
+      final weekEvents = calCtrl.events
+          .where((e) => e.startTime.isAfter(now) && e.startTime.isBefore(weekLater))
           .toList();
-
-      final int totalEvents = weekEvents.length;
-      final int pendingCount = totalEvents;
-      final double adherenceRate = calCtrl.calendarComplianceRate.value * 100;
+      final adherence = calCtrl.calendarComplianceRate.value * 100;
 
       return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: AppTheme.cardDecoration,
+        padding: const EdgeInsets.all(AppTheme.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1E293B),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.analytics_outlined, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'งานในสัปดาห์นี้',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+            Row(
+              children: [
+                const Icon(Icons.bar_chart_rounded,
+                    size: 18, color: AppTheme.accentGreen),
+                const SizedBox(width: AppTheme.space8),
+                Text('งานในสัปดาห์นี้', style: AppTheme.titleSmall),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildMetricBox(
-                      'ทั้งหมด',
-                      totalEvents.toString(),
-                      const Color(0xFF22D3EE),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildMetricBox(
-                      'รอดำเนินการ',
-                      pendingCount.toString(),
-                      const Color(0xFFF59E0B),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildMetricBox(
-                      'ทำตามแผน',
-                      '${adherenceRate.toStringAsFixed(0)}%',
-                      const Color(0xFF4FD1C5),
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: AppTheme.space16),
+            Row(
+              children: [
+                Expanded(
+                    child: _metricTile(
+                        'ทั้งหมด', weekEvents.length.toString(),
+                        AppTheme.accentGreen)),
+                const SizedBox(width: AppTheme.space12),
+                Expanded(
+                    child: _metricTile(
+                        'รอดำเนินการ', weekEvents.length.toString(),
+                        AppTheme.accentOrange)),
+                const SizedBox(width: AppTheme.space12),
+                Expanded(
+                    child: _metricTile(
+                        'ทำตามแผน', '${adherence.toStringAsFixed(0)}%',
+                        AppTheme.statusSuccess)),
+              ],
             ),
           ],
         ),
@@ -411,141 +207,283 @@ class CalendarView extends StatelessWidget {
     });
   }
 
-  Widget _buildMetricBox(String label, String value, Color color) {
+  Widget _metricTile(String label, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.space12, vertical: AppTheme.space12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: color,
+              fontFamily: 'NotoSansThai',
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Color(0xFF64748B),
-            ),
-            textAlign: TextAlign.center,
-          ),
+          const SizedBox(height: AppTheme.space2),
+          Text(label, style: AppTheme.caption),
         ],
       ),
     );
   }
 
-  /// SPECIFICATION #4: Selected Day Events Display
-  /// Show events when tapping a specific date on the calendar
-  Widget _buildSelectedDayEventsCard(CalendarController calCtrl, ProactiveController proactiveCtrl) {
+  // ─── Upcoming events ──────────────────────────────────────────────────────
+
+  Widget _buildUpcomingEventsCard(
+      CalendarController calCtrl, ProactiveController proactiveCtrl) {
     return Obx(() {
-      final DateTime selectedDate = calCtrl.selectedDay.value;
-      final List<CalendarEventModel> dayEvents = calCtrl.getEventsForDay(selectedDate);
-
-      if (dayEvents.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
-      final DateFormat headerFormatter = DateFormat('dd MMM yyyy');
-      final DateFormat timeFormatter = DateFormat('HH:mm');
+      final now = DateTime.now();
+      final twoWeeks = now.add(const Duration(days: 14));
+      final upcoming = calCtrl.events
+          .where((e) => e.startTime.isAfter(now) && e.startTime.isBefore(twoWeeks))
+          .toList();
 
       return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: AppTheme.cardDecoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1E293B),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.space16,
+                  AppTheme.space16, AppTheme.space16, AppTheme.space12),
               child: Row(
                 children: [
-                  const Icon(Icons.today, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    headerFormatter.format(selectedDate),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  const Icon(Icons.event_note_rounded,
+                      size: 18, color: AppTheme.accentGreen),
+                  const SizedBox(width: AppTheme.space8),
+                  Text('งานที่กำลังจะมาถึง', style: AppTheme.titleSmall),
+                  const Spacer(),
+                  if (upcoming.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.space8, vertical: AppTheme.space2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+                      ),
+                      child: Text(
+                        '${upcoming.length} งาน',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentGreenDark,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: AppTheme.dividerColor,
+                indent: AppTheme.space16, endIndent: AppTheme.space16),
+
+            // Content
+            if (upcoming.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(AppTheme.space32),
+                child: Center(
+                  child: Text(
+                    'ไม่มีงานที่กำลังจะมาถึง',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
-                  const Spacer(),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppTheme.space12),
+                itemCount: upcoming.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: AppTheme.space8),
+                itemBuilder: (context, i) =>
+                    _eventListTile(upcoming[i], proactiveCtrl),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _eventListTile(
+      CalendarEventModel event, ProactiveController proactiveCtrl) {
+    final df = DateFormat('dd/MM HH:mm');
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.space12),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundLight,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Green accent bar
+              Container(
+                width: 3,
+                height: 36,
+                margin: const EdgeInsets.only(right: AppTheme.space12, top: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGreen,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(event.title, style: AppTheme.titleSmall),
+                    const SizedBox(height: AppTheme.space2),
+                    Text(df.format(event.startTime),
+                        style: AppTheme.bodySmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!event.isReadOnly) ...[
+            const SizedBox(height: AppTheme.space8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () =>
+                    proactiveCtrl.runProactiveScan(specificEventId: event.id),
+                icon: const Icon(Icons.auto_awesome_rounded, size: 14),
+                label: const Text('ให้ AI เตรียมงาน',
+                    style: TextStyle(fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.accentGreen,
+                  side: const BorderSide(
+                      color: AppTheme.accentGreen, width: 1.0),
+                  padding: const EdgeInsets.symmetric(vertical: AppTheme.space6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                ),
+              ),
+            ),
+          ] else
+            Container(
+              margin: const EdgeInsets.only(top: AppTheme.space8),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.space8, vertical: AppTheme.space4),
+              decoration: BoxDecoration(
+                color: AppTheme.accentOrange.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXS),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.event_busy_rounded,
+                      size: 12, color: AppTheme.accentOrange),
+                  SizedBox(width: AppTheme.space4),
                   Text(
-                    '${dayEvents.length} งาน',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF4CAF50),
+                    'วันหยุด / อ่านอย่างเดียว',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.accentOrange,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Selected day events ──────────────────────────────────────────────────
+
+  Widget _buildSelectedDayCard(
+      CalendarController calCtrl, ProactiveController proactiveCtrl) {
+    return Obx(() {
+      final selected = calCtrl.selectedDay.value;
+      final dayEvents = calCtrl.getEventsForDay(selected);
+      if (dayEvents.isEmpty) return const SizedBox.shrink();
+
+      final hdr = DateFormat('EEE, d MMM yyyy');
+      final tf = DateFormat('HH:mm');
+
+      return Container(
+        decoration: AppTheme.cardDecoration,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.space16,
+                  AppTheme.space16, AppTheme.space16, AppTheme.space12),
+              child: Row(
+                children: [
+                  const Icon(Icons.today_rounded,
+                      size: 18, color: AppTheme.accentGreen),
+                  const SizedBox(width: AppTheme.space8),
+                  Expanded(
+                    child: Text(hdr.format(selected), style: AppTheme.titleSmall),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.space8, vertical: AppTheme.space2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGreen.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusPill),
+                    ),
+                    child: Text(
+                      '${dayEvents.length} งาน',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentGreenDark,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+            const Divider(height: 1, color: AppTheme.dividerColor,
+                indent: AppTheme.space16, endIndent: AppTheme.space16),
+
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.space12),
               itemCount: dayEvents.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final CalendarEventModel event = dayEvents[index];
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, color: AppTheme.dividerColor),
+              itemBuilder: (context, i) {
+                final e = dayEvents[i];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppTheme.space8),
                   child: Row(
                     children: [
                       Container(
-                        width: 4,
-                        height: 40,
+                        width: 3,
+                        height: 32,
+                        margin: const EdgeInsets.only(right: AppTheme.space12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50),
+                          color: AppTheme.accentGreen,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              event.title,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1E293B),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              timeFormatter.format(event.startTime),
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: Text(e.title, style: AppTheme.titleSmall),
                       ),
+                      Text(tf.format(e.startTime),
+                          style: AppTheme.bodySmall),
                     ],
                   ),
                 );
@@ -557,61 +495,63 @@ class CalendarView extends StatelessWidget {
     });
   }
 
+  // ─── Sign-in section ──────────────────────────────────────────────────────
+
   Widget _buildSignInSection(AuthController authCtrl) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF757575),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: ElevatedButton.icon(
-          onPressed: () => authCtrl.signInWithGoogle(),
-          icon: Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF4285F4),
-                  Color(0xFFEA4335),
-                  Color(0xFFFBBC05),
-                  Color(0xFF34A853),
-                ],
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'G',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      padding: const EdgeInsets.all(AppTheme.space32),
+      decoration: AppTheme.cardDecoration,
+      child: Column(
+        children: [
+          const Icon(Icons.calendar_month_outlined,
+              size: 48, color: AppTheme.textTertiary),
+          const SizedBox(height: AppTheme.space12),
+          const Text(
+            'เชื่อมต่อ Google Calendar',
+            style: AppTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.space8),
+          const Text(
+            'เข้าสู่ระบบเพื่อดูและซิงค์ปฏิทินของคุณ',
+            style: AppTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppTheme.space20),
+          ElevatedButton.icon(
+            onPressed: () => authCtrl.signInWithGoogle(),
+            icon: Container(
+              width: 20,
+              height: 20,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF4285F4),
+                    Color(0xFFEA4335),
+                    Color(0xFFFBBC05),
+                    Color(0xFF34A853),
+                  ],
                 ),
               ),
+              child: const Center(
+                child: Text('G',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+              ),
+            ),
+            label: const Text('เข้าสู่ระบบด้วย Google'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentGreen,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.space24, vertical: AppTheme.space12),
             ),
           ),
-          label: const Text(
-            'Sign in Google Calendar',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            elevation: 0,
-          ),
-        ),
+        ],
       ),
     );
   }
 }
-

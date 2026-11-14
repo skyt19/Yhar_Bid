@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'translations/app_translations.dart';
 import 'views/theme/app_theme.dart';
@@ -26,12 +27,17 @@ import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
 import 'views/main_layout_view.dart';
 import 'views/srs_test_lab_view.dart';
+import 'views/ai/ai_context_analysis_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/navigation_controller.dart';
 import 'controllers/calendar_controller.dart';
 import 'controllers/task_controller.dart';
 import 'controllers/ai_controller.dart';
+import 'controllers/habit_controller.dart';
+import 'controllers/proactive_controller.dart';
+import 'controllers/analytics_controller.dart';
+import 'controllers/task_plan_file_controller.dart';
 import 'controllers/habit_controller.dart';
 import 'controllers/proactive_controller.dart';
 import 'controllers/analytics_controller.dart';
@@ -104,7 +110,17 @@ Future<void> main() async {
   }
   
   // ============================================
-  // STEP 7: Dependency Injection (GetX Controllers)
+  // STEP 7: Locale Data Initialization (Required for DateFormat)
+  // ============================================
+  try {
+    await initializeDateFormatting('th', null);
+    debugPrint('✅ [Main] Thai locale data initialized');
+  } catch (e) {
+    debugPrint('⚠️ [Main] Locale initialization error: $e');
+  }
+
+  // ============================================
+  // STEP 8: Dependency Injection (GetX Controllers)
   // ============================================
   try {
     Get.put<SettingsController>(SettingsController(), permanent: true);
@@ -116,13 +132,14 @@ Future<void> main() async {
     Get.put<HabitController>(HabitController(), permanent: true);
     Get.put<ProactiveController>(ProactiveController(), permanent: true);
     Get.put<AnalyticsController>(AnalyticsController(), permanent: true);
+    Get.put<TaskPlanFileController>(TaskPlanFileController(), permanent: true);
     debugPrint('✅ [Main] All controllers registered');
   } catch (e) {
     debugPrint('⚠️ [Main] Controller registration error: $e');
   }
   
   // ============================================
-  // STEP 8: Launch Application
+  // STEP 9: Launch Application
   // ============================================
   runApp(const YharbidApp());
 }
@@ -163,6 +180,7 @@ class YharbidApp extends StatelessWidget {
         GetPage(name: AppRoutes.analytics, page: () => const AnalyticsDashboardView()),
         GetPage(name: AppRoutes.notificationSettings, page: () => const NotificationSettingsView()),
         GetPage(name: AppRoutes.srsTestLab, page: () => const SrsTestLabView()),
+        GetPage(name: AppRoutes.aiContextAnalysis, page: () => const AIContextAnalysisView()),
       ],
     );
   }
@@ -188,6 +206,7 @@ class AppRoutes {
   static const String analytics = '/analytics';
   static const String notificationSettings = '/notification-settings';
   static const String srsTestLab = '/srs-test-lab';
+  static const String aiContextAnalysis = '/ai-context-analysis';
 }
 
 

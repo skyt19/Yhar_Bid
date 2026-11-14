@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:html' as html; // For Flutter Web file download
 import '../models/task_model.dart';
 import '../controllers/auth_controller.dart';
@@ -77,10 +78,30 @@ class TaskController extends GetxController {
           snackPosition: SnackPosition.BOTTOM);
       return false;
     }
-    
+
     try {
       isLoading.value = true;
-      
+
+      // CRITICAL FIX: Verify Firebase Auth is active before Firestore write
+      // This ensures request.auth is populated in Firestore Security Rules
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser == null) {
+        debugPrint('⚠️ [TaskController] Firebase Auth currentUser is NULL');
+        Get.snackbar('ข้อผิดพลาด', 'กรุณาเข้าสู่ระบบใหม่อีกครั้ง (Auth session expired)',
+            snackPosition: SnackPosition.BOTTOM);
+        return false;
+      }
+
+      // Verify UID matches
+      if (firebaseUser.uid != user.uid) {
+        debugPrint('⚠️ [TaskController] UID mismatch: Firebase=${firebaseUser.uid}, User=${user.uid}');
+        Get.snackbar('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการยืนยันตัวตน กรุณาเข้าสู่ระบบใหม่',
+            snackPosition: SnackPosition.BOTTOM);
+        return false;
+      }
+
+      debugPrint('✅ [TaskController] Firebase Auth verified: UID=${firebaseUser.uid}');
+
       final task = TaskModel(
         id: '',
         title: title,
@@ -91,19 +112,34 @@ class TaskController extends GetxController {
         category: category,
         priority: priority ?? 'Medium',
       );
-      
+
       await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('tasks')
           .add(task.toFirestore());
-      
+
       Get.snackbar('สำเร็จ', 'เพิ่มงาน "$title" แล้ว',
           snackPosition: SnackPosition.BOTTOM);
-      
+
       await fetchTasks();
       return true;
+    } on FirebaseException catch (e) {
+      debugPrint('⚠️ [TaskController] FirebaseException: ${e.code} - ${e.message}');
+      if (e.code == 'permission-denied') {
+        Get.snackbar(
+          'ไม่มีสิทธิ์เข้าถึง',
+          'กรุณาเข้าสู่ระบบใหม่เพื่อยืนยันตัวตน',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 5),
+        );
+      } else {
+        Get.snackbar('ข้อผิดพลาด Firestore', 'รหัสข้อผิดพลาด: ${e.code}',
+            snackPosition: SnackPosition.BOTTOM);
+      }
+      return false;
     } catch (e) {
+      debugPrint('⚠️ [TaskController] Unexpected error: $e');
       Get.snackbar('ข้อผิดพลาด', 'ไม่สามารถเพิ่มงานได้: $e',
           snackPosition: SnackPosition.BOTTOM);
       return false;
