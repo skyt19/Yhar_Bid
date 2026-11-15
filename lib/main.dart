@@ -28,6 +28,7 @@ import 'views/notification_settings_view.dart';
 import 'views/main_layout_view.dart';
 import 'views/srs_test_lab_view.dart';
 import 'views/ai/ai_chat_with_history_view.dart';
+import 'views/ai/ai_context_analysis_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/navigation_controller.dart';
@@ -180,7 +181,7 @@ class YharbidApp extends StatelessWidget {
         GetPage(name: AppRoutes.analytics, page: () => const AnalyticsDashboardView()),
         GetPage(name: AppRoutes.notificationSettings, page: () => const NotificationSettingsView()),
         GetPage(name: AppRoutes.srsTestLab, page: () => const SrsTestLabView()),
-        GetPage(name: AppRoutes.aiContextAnalysis, page: () => const AIContextAnalysisView()),
+        GetPage(name: AppRoutes.aiContextAnalysis, page: () => AIContextAnalysisView()),
       ],
     );
   }
