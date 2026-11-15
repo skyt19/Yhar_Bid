@@ -27,7 +27,7 @@ import 'views/analytics_dashboard_view.dart';
 import 'views/notification_settings_view.dart';
 import 'views/main_layout_view.dart';
 import 'views/srs_test_lab_view.dart';
-import 'views/ai/ai_context_analysis_view.dart';
+import 'views/ai/ai_chat_with_history_view.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/settings_controller.dart';
 import 'controllers/navigation_controller.dart';
@@ -170,7 +170,7 @@ class YharbidApp extends StatelessWidget {
         GetPage(name: AppRoutes.roleSelection, page: () => const RoleSelectionView()),
         GetPage(name: AppRoutes.aiPersonality, page: () => const AiPersonalityView()),
         GetPage(name: AppRoutes.dashboard, page: () => const MainLayoutView()), // ✅ ใช้ MainLayoutView แทน MainDashboardView
-        GetPage(name: AppRoutes.aiChatbot, page: () => const AiChatbotView()),
+        GetPage(name: AppRoutes.aiChatbot, page: () => const AiChatWithHistoryView()),
         GetPage(name: AppRoutes.calendar, page: () => const CalendarView()),
         GetPage(name: AppRoutes.settings, page: () => const SettingsView()),
         GetPage(name: AppRoutes.advancedSettings, page: () => const AdvancedSettingsView()),

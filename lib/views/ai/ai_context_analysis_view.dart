@@ -59,6 +59,12 @@ class AIContextAnalysisView extends StatelessWidget {
       padding: const EdgeInsets.all(AppTheme.space16),
       child: Row(
         children: [
+          // Back button
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Get.back(),
+            tooltip: 'Back to Home',
+          ),
           Container(
             width: 40,
             height: 40,
