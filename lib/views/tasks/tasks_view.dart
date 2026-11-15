@@ -9,7 +9,7 @@ import '../../controllers/proactive_controller.dart';
 import '../../controllers/prepared_plan_controller.dart';
 import '../../models/task_model.dart';
 import '../widgets/add_task_dialog.dart';
-import '../preparation_detail_view.dart';
+import '../preparation_detail_view_with_markdown.dart';
 
 class TasksView extends StatelessWidget {
   const TasksView({super.key});
@@ -229,7 +229,7 @@ class TasksView extends StatelessWidget {
         child: InkWell(
           onTap: plan != null
               ? () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => PreparationDetailView(plan: plan),
+                    builder: (ctx) => PreparationDetailViewWithMarkdown(plan: plan),
                   ))
               : null,
           borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
