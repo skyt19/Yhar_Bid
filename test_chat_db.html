@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat-DB JWT Verification Test</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <h1>Chat-DB JWT Verification Test</h1>
+    <div id="status">Loading...</div>
+    <pre id="output"></pre>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBBQhI9R6EqLb-uyFsC-gF8_0rjx_dgKE",
+            authDomain: "yhar-bid.firebaseapp.com",
+            projectId: "yhar-bid"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+
+        function log(msg) {
+            console.log(msg);
+            outputEl.textContent += msg + '\n';
+        }
+
+        async function testChatDb() {
+            try {
+                statusEl.textContent = 'Checking authentication...';
+
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    statusEl.textContent = 'Not signed in. Please sign in first.';
+                    log('❌ No authenticated user');
+                    return;
+                }
+
+                log(`✅ Authenticated as: ${user.email}`);
+                log(`   UID: ${user.uid}`);
+
+                statusEl.textContent = 'Getting Firebase ID token...';
+                const token = await user.getIdToken(true);
+                log(`✅ Got Firebase ID token (${token.length} chars)`);
+                log(`   Token preview: ${token.substring(0, 50)}...`);
+
+                statusEl.textContent = 'Testing chat-db endpoint...';
+                const response = await fetch('https://aanochhlejpbhdhkgjpx.supabase.co/functions/v1/chat-db', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        operation: 'list_conversations',
+                        limit: 10
+                    })
+                });
+
+                log(`\n📡 HTTP ${response.status} ${response.statusText}`);
+
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    log(`✅ SUCCESS: chat-db responded correctly`);
+                    log(`   Conversations: ${data.conversations ? data.conversations.length : 0}`);
+                    log(`\n   Response: ${JSON.stringify(data, null, 2)}`);
+                    statusEl.textContent = '✅ Test passed - JWT verification working';
+                } else {
+                    log(`❌ FAILED: Unexpected status ${response.status}`);
+                    log(`   Error: ${JSON.stringify(data, null, 2)}`);
+                    statusEl.textContent = `❌ Test failed - HTTP ${response.status}`;
+                }
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`);
+                log(`   Stack: ${error.stack}`);
+                statusEl.textContent = '❌ Test failed - Error occurred';
+            }
+        }
+
+        // Auto-run test when page loads if user is signed in
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                testChatDb();
+            } else {
+                statusEl.textContent = 'Please sign in at https://yhar-bid.web.app first';
+                log('ℹ️ Not authenticated. Steps:');
+                log('   1. Open https://yhar-bid.web.app in another tab');
+                log('   2. Sign in with Google');
+                log('   3. Come back to this page');
+                log('   4. Refresh this page');
+            }
+        });
+    </script>
+</body>
+</html>

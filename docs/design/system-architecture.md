@@ -13,7 +13,7 @@ This diagram shows the complete Yhar Bid system architecture with all components
    - taskPlanFiles (top-level, metadata for TXT files)
 4. **Firebase Storage** - Stores task plan TXT files at task_plans/{userId}/
 5. **Supabase Edge Function (groq-proxy)** - Serverless proxy that verifies Firebase ID tokens and forwards requests to Groq API
-6. **Groq API** - AI service using locked model openai/gpt-oss-20b
+6. **Groq API** - AI service using **permanently locked model `openai/gpt-oss-20b`** (enforced in both client and server)
 7. **Google Calendar API** - OAuth 2.0 integration with calendar.events and calendar scopes for read/write access
 
 **Authentication Boundaries:**

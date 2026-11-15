@@ -1,6 +1,6 @@
 # Use Case Diagram
 
-This Mermaid use case diagram covers all SRS requirements for Yhar Bid (Yharbid). The system boundary encompasses the Yharbid AI Assistant application. Three actors interact with the system: User (primary), Google Calendar API (external integration for calendar synchronization), and AI Provider (external Groq API for AI-powered features). The diagram shows 10 use cases aligned with the 6 functional requirements from the SRS. UC-1 and UC-2 handle onboarding and AI style selection (FR-1). UC-3 provides two-way Google Calendar synchronization (FR-2). UC-4 is the core proactive preparation flow (FR-3), with UC-5, UC-6, and UC-7 as role-specific extensions for Student, Corporate Employee, and Educator respectively. UC-8 manages role-contextual habits (FR-4). UC-9 delivers customized short notifications (FR-5). UC-10 provides the behavioral analytics dashboard (FR-6). The AI Provider participates in UC-4 through UC-9, supporting preparation generation, behavior analysis, and personalized messaging. Google Calendar API participates in UC-3 for bidirectional synchronization and UC-4 for event detection.
+This Mermaid use case diagram covers all SRS requirements for Yhar Bid (Yharbid). The system boundary encompasses the Yharbid AI Assistant application. Three actors interact with the system: User (primary), Google Calendar API (external integration for calendar synchronization), and AI Provider (external Groq API for AI-powered features). The diagram shows 10 use cases aligned with the 6 functional requirements from the SRS. UC-1 and UC-2 handle onboarding and AI style selection (FR-1). UC-3 provides two-way Google Calendar synchronization (FR-2). UC-4 is the core proactive preparation flow (FR-3), with UC-5, UC-6, and UC-7 as role-specific extensions for Student, Corporate Employee, and Educator respectively. UC-8 manages role-contextual habits (FR-4). UC-9 provides task plan document generation and management (FR-5). UC-10 provides the behavioral analytics dashboard (FR-6). The AI Provider participates in UC-4 through UC-9, supporting preparation generation and document creation. Google Calendar API participates in UC-3 for bidirectional synchronization and UC-4 for event detection.
 
 ## Diagram
 
@@ -15,7 +15,7 @@ graph TB
         UC6["UC-6: Prepare Employee Meeting Agenda<br/>(extends UC-4)"]
         UC7["UC-7: Prepare Educator Teaching/Exam Structure<br/>(extends UC-4)"]
         UC8["UC-8: Manage Role-Contextual Habits"]
-        UC9["UC-9: Receive Customized Short Notification"]
+        UC9["UC-9: Generate & Retrieve Task Plan Documents<br/>(UTF-8 TXT with Firebase Storage)"]
         UC10["UC-10: View Behavioral Analytics Dashboard"]
     end
     
@@ -27,7 +27,7 @@ graph TB
     User -->|performs| UC2
     User -->|initiates| UC3
     User -->|performs| UC8
-    User -->|receives| UC9
+    User -->|generates/retrieves| UC9
     User -->|views| UC10
     
     GoogleCalendar -->|synchronizes with| UC3
@@ -38,7 +38,7 @@ graph TB
     AIProvider -->|generates for| UC6
     AIProvider -->|generates for| UC7
     AIProvider -->|analyzes for| UC8
-    AIProvider -->|personalizes| UC9
+    AIProvider -->|creates documents for| UC9
     AIProvider -->|supports| UC10
     
     UC4 -.->|extends| UC5
@@ -67,5 +67,7 @@ graph TB
 - FR-2: Google Calendar Synchronization (UC-3)
 - FR-3: Proactive Role-Based Task Preparation (UC-4, UC-5, UC-6, UC-7)
 - FR-4: Role-Contextual Habit Tracker (UC-8)
-- FR-5: Customized Short Notifications (UC-9)
+- FR-5: Task Plan Document Generation & Management (UC-9)
 - FR-6: Behavioral Analytics Dashboard (UC-10)
+
+**Note on Notifications:** The SRS Section 1.1 originally mentioned "customized short notifications" as a capability. The implementation includes notification services (`lib/services/notification_service.dart`, `lib/views/notification_settings_view.dart`) that support FR-1 (AI personality in message tone) and FR-3 (event reminders). Notifications are not designated as a separate functional requirement or use case; they are a supporting feature integrated across multiple FRs.

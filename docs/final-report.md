@@ -239,40 +239,53 @@ Firebase Auth
 - **No service layer**: All logic in controller (no `lib/services/habit_service.dart`)
 - **No automated tests**: No test files for habit model, controller, or UI; manual testing via SRS test lab view only
 
-### 3.5 FR-5: Customized Short Notifications
+### 3.5 FR-5: Task Plan Document Generation & Management
 
-**Status**: ⚠️ Partially Implemented
+**Status**: ✅ Fully Implemented
 
 **Evidence**:
-- `lib/services/notification_service.dart` implements:
-  - `showEventNotification()` with AI-generated content via AiService
-  - 120-character limit enforcement (line 168)
-  - `sendTestNotification()` for testing (line 271)
-  - `_getFallbackNotificationMessage()` with 9 templates (3 roles × 3 personalities) for NFR-7 compliance (lines 226-268)
-- `lib/views/notification_settings_view.dart` provides:
-  - Aggression level slider (0=Polite, 1=Friendly, 2=Aggressive)
-  - Real-time preview with character count
-  - Test Notification button calls `NotificationService.sendTestNotification()` with user role and personality
-- `lib/controllers/settings_controller.dart`:
-  - Manages `aiAggressionLevel` (0-2)
-  - Provides `notificationPreviewTh` with 120-character preview messages per personality
-  - Converts level to AiPersonality enum
-- `lib/services/ai_service.dart` provides AI content generation with offline fallback templates
+- `lib/controllers/task_plan_file_controller.dart` implements:
+  - `generateTaskPlanFromCalendar()`: orchestrates Phase 1-4 pipeline (calendar retrieval → AI analysis → TXT generation → Storage upload)
+  - `refreshFileList()`: retrieves user-isolated document list from Firestore
+  - `previewFile()`: downloads and displays file content
+  - `deleteFile()`: two-phase deletion (Storage + Firestore) with proper state management
+- `lib/services/task_plan_txt_service.dart` provides:
+  - `generateTxtBytes()`: converts TaskPlanDocument to UTF-8 TXT format with Thai language support
+  - `validateTxtContent()`: verifies required sections present
+  - `validateTxtBytes()`: confirms UTF-8 encoding without BOM
+  - `generateFilename()`: creates timestamped safe filenames (task_plan_YYYY-MM-DD_HHmmss.txt)
+- `lib/services/task_plan_storage_service.dart` handles:
+  - `uploadTaskPlan()`: uploads to Firebase Storage path `task_plans/{userId}/{filename}` with metadata to Firestore collection `taskPlanFiles`
+  - `listUserFiles()`: retrieves files filtered by userId with ownership verification
+  - `downloadFile()`: fetches file content with permission checking
+  - `deleteFile()`: removes both Storage object and Firestore metadata
+- `lib/views/ai/ai_workspace_view.dart` provides UI for document generation, list, preview, and download
+- `lib/models/task_plan_document_model.dart` defines:
+  - TaskPlanDocument structure with generatedAt, planningStartDate/EndDate, eventCount, events list
+  - EventAnalysis with objective, preparationSteps, executionSteps, requiredResources, priority, suggestedTimeline, checklist
+- `lib/models/task_plan_file_model.dart` defines:
+  - TaskPlanFile metadata: id, userId, filename, storagePath, downloadUrl, sizeBytes, mimeType, createdAt, planningStartDate/EndDate, sourceEventIds, eventCount
+  - FileDeletionState enum for lifecycle management (idle, confirmationRequested, deleting, deleted, failed)
 
 **Test Evidence**:
-- `test/groq_api_test.dart` verifies notification field presence in AI response JSON schema
-- Validates fallback system operational status for NFR-7 compliance
+- `test/task_plan_pipeline_test.dart` - 27 passing integration tests covering:
+  - Phase 1: Calendar data retrieval and validation
+  - Phase 2: AI analysis for each event with role-based prompts
+  - Phase 3: TXT generation with UTF-8 encoding validation
+  - Phase 4: Firebase Storage upload and metadata persistence
+  - File lifecycle: list, preview, download, delete operations
+  - Security: User isolation and ownership verification
+
+All 27 tests verify complete pipeline from calendar events through AI analysis to downloadable TXT files with proper user access control.
 
 **Limitations**:
-- **Manual trigger only**: `showEventNotification()` and `sendTestNotification()` must be explicitly called; no automated notification scheduling exists
-- **No scheduleNotification()**: The `notification_service.dart` file (311 lines) contains only `showNotification()` and `showEventNotification()` methods; no scheduled notification capability exists
-- **Gap**: SRS AC1 states "when a notification is generated" implying automated generation triggered by events, but current implementation only supports manual generation via Test button
-- **No background notification system**: No Cloud Functions, cron jobs, or scheduled tasks exist to automatically generate and send notifications for upcoming events
-- Fallback templates exist (NFR-7 compliant) with 9 templates (3 roles × 3 personalities)
-- 120-character limit enforced in code (line 168) but not validated in automated tests
-- No automated tests exist for notification scheduling or delivery
-- Notification display works on Android/iOS platforms; Flutter Web requires different notification mechanism
-- Test button in Settings allows manual verification of notification generation with AI personalization
+- **TXT format only**: Currently generates plain text documents; no PDF or formatted document support
+- **Manual trigger**: Document generation must be initiated by user action; no automated background generation
+- **Single document per generation**: Each generation creates one file covering all selected events; no per-event document splitting
+- **5 MB file size limit**: Firebase Storage constraint per file
+- **No document templates**: Uses fixed TXT layout; no user-customizable templates
+- **No collaborative features**: Documents are user-private; no sharing or collaborative editing
+- **Limited search**: No full-text search within stored documents; metadata filtering only
 
 ### 3.6 FR-6: Behavioral Analytics Dashboard
 
@@ -405,28 +418,30 @@ Firebase Auth
 
 ---
 
-### 4.5 FR-5: Customized Short Notifications
+### 4.5 FR-5: Task Plan Document Generation & Management
 
-**Problem**: Generic reminders can become ineffective when they repeat the same wording regardless of user preference or context. Users need short notifications that match their selected communication style so that reminders are concise and more suitable to how they prefer to be addressed.
+**Problem**: Users need persistent access to AI-generated preparation plans for their calendar events. Without downloadable documents, users lose access to preparation materials when offline or when they want to share plans externally.
 
 **Requirement** (SRS Section 5.2):
-> As a user, I want short notifications that match my selected communication style, so that reminders are concise and more suitable to how I prefer to be addressed.
+> As a user, I want to generate, save, download, and retrieve AI-generated Task Plan documents, so that I can keep and access preparation materials for my upcoming activities.
 >
 > **Acceptance Criteria**:
-> 1. Given a user has selected a communication style, when a notification is generated, then the message is short, direct, and consistent with the selected style.
-> 2. Given the AI generation service is unavailable, when a notification is needed, then the system sends an available fallback short-notification template instead of failing the reminder flow.
+> 1. Given an AI-generated Task Plan is available, when the user requests document generation, then the system creates a downloadable UTF-8 TXT document containing the preparation content.
+> 2. Given a Task Plan document has been generated, when the user downloads it, then the downloaded document contains the corresponding preparation content for the calendar events.
+> 3. Given a document is saved, when the user accesses their document list, then the system retrieves documents belonging to that authenticated user only.
+> 4. Given a user accesses stored documents, then the system must prevent access to documents belonging to another user.
 
-**Design Reference**: SRS.md Section 5.2 Use-case diagram (Figure 1) - UC-9: Receive Customized Short Notification. SRS.md Section 7 Traceability matrix shows FR-5 mapped to "Style-aware message strategy + fallback template" solution design.
+**Design Reference**: SRS Section 5.2 references UC-9: Receive Task Plan Document for file generation and retrieval. Data model documented in docs/design/data-model.md shows taskPlanFiles collection at Firestore top level with userId foreign key, linking to Firebase Storage files at task_plans/{userId}/{filename}.
 
 **Implementation**:
-- **Models**: `lib/models/user_model.dart` (UserRole, AiPersonality enums)
-- **Controllers**: `lib/controllers/settings_controller.dart`
-- **Services**: `lib/services/notification_service.dart`, `lib/services/ai_service.dart`
-- **Views**: `lib/views/notification_settings_view.dart`
+- **Models**: `lib/models/task_plan_document_model.dart` (TaskPlanDocument, EventAnalysis), `lib/models/task_plan_file_model.dart` (TaskPlanFile, FileDeletionState)
+- **Controllers**: `lib/controllers/task_plan_file_controller.dart`
+- **Services**: `lib/services/task_plan_txt_service.dart`, `lib/services/task_plan_storage_service.dart`
+- **Views**: `lib/views/ai/ai_workspace_view.dart`
 
-**Test Evidence**: `test/groq_api_test.dart` verifies notification field presence in AI response JSON schema and validates fallback system operational status for NFR-7 compliance.
+**Test Evidence**: `test/task_plan_pipeline_test.dart` - 27 passing integration tests covering complete pipeline from calendar events through AI analysis to downloadable TXT files with user access control.
 
-**Status**: ✅ Implemented (full AI-generated notification system with fallback templates)
+**Status**: ✅ Implemented (comprehensive task plan document system with automated test coverage)
 
 ---
 
@@ -517,7 +532,7 @@ Firebase Auth
 | FR-2: Calendar Sync | ✅ Complete | ✅ Complete | ❌ None | ✅ Available | ✅ Operational |
 | FR-3: Proactive Tasks | ✅ Complete | ✅ Complete | ✅ Comprehensive | ✅ Available | ✅ Operational |
 | FR-4: Habit Tracker | ✅ Complete | ⚠️ Incomplete | ❌ None | ✅ Available | ⚠️ Partial |
-| FR-5: Notifications | ✅ Complete | ✅ Complete | ✅ Integration | ✅ Available | ✅ Operational |
+| FR-5: Task Plan Documents | ✅ Complete | ✅ Complete | ✅ Integration (27 tests) | ✅ Available | ✅ Operational |
 | FR-6: Analytics | ✅ Complete | ✅ Complete | ✅ Comprehensive | ✅ Available | ✅ Operational |
 
 ---
@@ -552,11 +567,14 @@ Firebase Auth
 - **No automated tests**: Zero test coverage for habit functionality
 - **Analytics integration works**: Dashboard successfully displays habit metrics
 
-#### 6.1.5 FR-5: Customized Short Notifications
-- No automated scheduling or triggering in current deployment
-- Notifications manually triggered via Test button only
-- 120-character limit enforced but not validated in tests
-- Flutter Local Notifications may have limited functionality in Flutter Web
+#### 6.1.5 FR-5: Task Plan Document Generation & Management
+- **TXT format only**: Currently generates plain text documents; no PDF or formatted document support
+- **Manual trigger**: Document generation must be initiated by user action; no automated background generation
+- **Single document per generation**: Each generation creates one file covering all selected events
+- **5 MB file size limit**: Firebase Storage constraint per file
+- **No document templates**: Uses fixed TXT layout; no user-customizable templates
+- **No collaborative features**: Documents are user-private; no sharing or collaborative editing
+- **Limited search**: No full-text search within stored documents; metadata filtering only
 
 #### 6.1.6 FR-6: Behavioral Analytics Dashboard
 - Calendar compliance based on event end times (no actual attendance tracking)
@@ -615,13 +633,13 @@ Yhar Bid successfully implements a role-based personal productivity assistant wi
 5. **Production Deployment**: Live at https://yhar-bid.web.app with Firebase infrastructure
 6. **Behavioral Analytics**: Weekly dashboard tracking calendar adherence and habit success rates
 
-**3 of 6 Requirements Fully Implemented, 3 Partially Implemented**:
-- ✅ FR-1: Role-Based Onboarding & AI Style Selection
-- ⚠️ FR-2: Google Calendar Synchronization (read works, write has graceful fallback)
-- ⚠️ FR-3: Proactive Role-Based Task Preparation (AI works, manual trigger only)
-- ✅ FR-4: Role-Contextual Habit Tracker (backend complete, analytics integration works)
-- ⚠️ FR-5: Customized Short Notifications (generation works, no automated scheduling)
-- ✅ FR-6: Behavioral Analytics Dashboard
+**4 of 6 Requirements Fully Implemented, 2 Partially Implemented**:
+- ✅ FR-1: Role-Based Onboarding & AI Style Selection (implemented; limited test coverage)
+- ⚠️ FR-2: Google Calendar Synchronization (read fully functional; write returns false success for read-only calendars)
+- ⚠️ FR-3: Proactive Role-Based Task Preparation (AI generation operational; manual trigger only, NFR-6 not met)
+- ✅ FR-4: Role-Contextual Habit Tracker (backend complete; SRS acceptance criteria met; UI incomplete)
+- ✅ FR-5: Task Plan Document Generation & Management (complete with 27 passing integration tests)
+- ✅ FR-6: Behavioral Analytics Dashboard (fully operational with test coverage)
 
 ### 7.2 Technical Success Factors
 
@@ -753,8 +771,6 @@ The Yhar Bid project successfully validates the hypothesis that role-based conte
 ---
 
 **Report Generated**: 2026-11-13  
-**Project Status**: 5/6 Core Features Operational  
+**Project Status**: 4/6 Fully Implemented, 2/6 Partially Implemented  
 **Deployment URL**: https://yhar-bid.web.app  
 **Firebase Project**: yhar-bid
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

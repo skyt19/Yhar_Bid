@@ -240,64 +240,69 @@ No automated tests found. Searched test/ directory - no habit-specific test file
 
 ---
 
-## FR-5: As a user, I want short notifications that match my selected communication style...
+## FR-5: Task Plan Document Generation & Management
 
 ### Problem
 
-Generic reminders can become ineffective when they repeat the same wording regardless of user preference or context. Users need short notifications that match their selected communication style so that reminders are concise and more suitable to how they prefer to be addressed.
+Users need persistent access to AI-generated preparation plans for their calendar events. Without downloadable documents, users lose access to preparation materials when offline or when they want to share plans externally.
 
 ### Requirement
 
-As a user, I want short notifications that match my selected communication style, so that reminders are concise and more suitable to how I prefer to be addressed.
+As a user, I want to generate, save, download, and retrieve AI-generated Task Plan documents, so that I can keep and access preparation materials for my upcoming activities.
 
 Acceptance Criteria:
-1. Given a user has selected a communication style, when a notification is generated, then the message is short, direct, and consistent with the selected style.
-2. Given the AI generation service is unavailable, when a notification is needed, then the system sends an available fallback short-notification template instead of failing the reminder flow.
+1. Given an AI-generated Task Plan is available, when the user requests document generation, then the system creates a downloadable UTF-8 TXT document containing the preparation content.
+2. Given a Task Plan document has been generated, when the user downloads it, then the downloaded document contains the corresponding preparation content for the calendar events.
+3. Given a document is saved, when the user accesses their document list, then the system retrieves documents belonging to that authenticated user only.
+4. Given a user accesses stored documents, then the system must prevent access to documents belonging to another user.
 
 ### Design Reference
 
-SRS.md Section 5.2 Use-case diagram (Figure 1) - Yharbid use-case diagram with UC-9: Receive Customized Short Notification. SRS.md Section 7 Traceability matrix shows FR-5 mapped to "Style-aware message strategy + fallback template" solution design. README.md documents the Flutter Web architecture with Firebase Auth, Firestore, and Supabase Edge Function proxy to Groq API.
+SRS Section 5.2 references UC-9: Receive Task Plan Document for file generation and retrieval. Data model documented in docs/design/data-model.md shows taskPlanFiles collection at Firestore top level with userId foreign key, linking to Firebase Storage files at task_plans/{userId}/{filename}.
 
 ### Implementation
 
-**Screen/Feature:** Notification Settings View with AI personality slider (0=Polite, 1=Friendly, 2=Aggressive) and real-time preview, plus Test Notification button
+**Screen/Feature:** Task Plan Document Generation & Management
 
 **Controllers:**
-- settings_controller.dart - manages aiAggressionLevel (0-2), provides notificationPreviewTh with 120-character preview messages per personality, converts level to AiPersonality enum
+- lib/controllers/task_plan_file_controller.dart - Implements generateTaskPlanFromCalendar() which orchestrates Phase 1-4: calendar retrieval, AI analysis, TXT generation, and Storage upload. Manages file list with refreshFileList(), preview with previewFile(), and deletion with proper state management (requestDeleteConfirmation, deleteFile).
 
 **Services:**
-- notification_service.dart - implements showEventNotification() with AI-generated content via AiService, enforces 120-character limit (line 168), provides sendTestNotification() for testing (line 271), implements _getFallbackNotificationMessage() with 9 templates (3 roles × 3 personalities) for NFR-7 compliance (lines 226-268)
-- ai_service.dart - provides AI content generation via Supabase Edge Function proxy to Groq API, supports offline fallback templates
+- lib/services/task_plan_txt_service.dart - Provides generateTxtBytes() converting TaskPlanDocument to UTF-8 TXT format with Thai language support. Implements validateTxtContent() and validateTxtBytes() for content verification. Generates safe filenames with timestamp format task_plan_YYYY-MM-DD_HHmmss.txt.
+- lib/services/task_plan_storage_service.dart - Handles uploadTaskPlan() to Firebase Storage path task_plans/{userId}/{filename} with metadata persistence to Firestore taskPlanFiles collection. Provides listUserFiles() with userId filtering, downloadFile() with ownership verification, and deleteFile() with two-phase deletion (Storage + Firestore).
 
 **Views:**
-- notification_settings_view.dart - displays aggression level slider, real-time preview with character count, Test Notification button that calls NotificationService.sendTestNotification() with user role and personality
+- lib/views/ai/ai_workspace_view.dart - User interface for task plan generation, file list display, preview, and download
 
 **Models:**
-- user_model.dart - defines UserRole enum (student, corporateEmployee, educator) and AiPersonality enum (politeJarvis, friendly, aggressiveMotivator)
+- lib/models/task_plan_document_model.dart - Defines TaskPlanDocument with generatedAt, planningStartDate/EndDate, eventCount, and events list. EventAnalysis structure with objective, preparationSteps, executionSteps, requiredResources, priority, timeline, and checklist.
+- lib/models/task_plan_file_model.dart - Defines TaskPlanFile metadata with id, userId, filename, storagePath, downloadUrl, sizeBytes, mimeType, createdAt, planningStartDate/EndDate, sourceEventIds, eventCount, and FileDeletionState enum for lifecycle management.
 
 ### Test Evidence
 
-test/groq_api_test.dart verifies notification field presence in AI response JSON schema (lines include validation that jsonResult.containsKey('notification') is true). The test also validates fallback system operational status for NFR-7 compliance. No dedicated NotificationService unit tests found - notification functionality is verified through integration tests in groq_api_test.dart and manual testing via the Test Notification button in notification_settings_view.dart.
+test/task_plan_pipeline_test.dart - Comprehensive 27-test integration suite covering:
+- Phase 1: Calendar data retrieval and validation
+- Phase 2: AI analysis for each event with role-based prompts
+- Phase 3: TXT generation with UTF-8 encoding validation
+- Phase 4: Firebase Storage upload and metadata persistence
+- File lifecycle: list, preview, download, delete operations
+- Security: User isolation and ownership verification
+
+All 27 tests passing. Tests verify complete pipeline from calendar events through AI analysis to downloadable TXT files with proper user access control.
 
 ### Status
 
-**PARTIALLY_IMPLEMENTED**
+**IMPLEMENTED**
 
 ### Limitations
 
-1. **Manual trigger only**: showEventNotification() and sendTestNotification() must be explicitly called; no automated notification scheduling exists. The notification_service.dart file (311 lines) contains no scheduleNotification() method or automated triggering capability.
-
-2. **Gap**: SRS AC1 states "when a notification is generated" implying automated generation triggered by calendar events, but current implementation only supports manual generation via Test Notification button in Settings view.
-
-3. **No background notification system**: No Cloud Functions, cron jobs, or scheduled tasks exist to automatically generate and send notifications for upcoming events. Users must manually trigger test notifications.
-
-4. Fallback templates exist (NFR-7 compliant) with 9 templates covering 3 roles × 3 personalities, ensuring system continues when AI service unavailable.
-
-5. 120-character limit enforced in notification_service.dart (line 168) but not validated in automated tests.
-
-6. No dedicated unit tests for NotificationService - testing relies on integration tests (test/groq_api_test.dart validates JSON response structure) and manual verification via Test button.
-
-7. Flutter Local Notifications requires platform-specific permissions (Android/iOS) which may not work in Flutter Web deployment mentioned in README.md.
+1. **TXT format only**: Currently generates plain text documents; no PDF or formatted document support
+2. **Manual trigger**: Document generation must be initiated by user action; no automated background generation
+3. **Single document per generation**: Each generation creates one file covering all selected events; no per-event document splitting
+4. **5 MB file size limit**: Firebase Storage constraint per file
+5. **No document templates**: Uses fixed TXT layout; no user-customizable templates
+6. **No collaborative features**: Documents are user-private; no sharing or collaborative editing
+7. **Limited search**: No full-text search within stored documents; metadata filtering only
 
 ---
 

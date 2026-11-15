@@ -48,10 +48,11 @@ Many users know what they need to do but may procrastinate, miss planned activit
 - Weekly success rate calculation
 - Analytics integration (⚠️ UI incomplete: backend works, dedicated view missing)
 
-### Customized Short Notifications (FR-5)
-- AI-generated notifications matching communication style
-- 120-character limit for concise reminders
-- Fallback templates for offline reliability
+### Task Plan Document Generation & Management (FR-5)
+- AI-generated preparation plans saved as downloadable UTF-8 TXT documents
+- Firebase Storage integration with user-isolated access control
+- Complete document lifecycle: generation, storage, retrieval, preview, download, deletion
+- 27 passing integration tests (test/task_plan_pipeline_test.dart)
 
 ### Behavioral Analytics Dashboard (FR-6)
 - Weekly calendar adherence metrics
@@ -102,7 +103,8 @@ Many users know what they need to do but may procrastinate, miss planned activit
 ### Prerequisites
 - Flutter SDK (3.0+)
 - Chrome browser (for Flutter Web)
-- Firebase project configured (see docs/SUPABASE_GROQ_SETUP.md)
+- Firebase project configured (Firebase Auth, Firestore, Storage, Hosting)
+- Supabase project with Edge Function deployment (groq-proxy)
 
 ### Local Development
 
@@ -155,7 +157,7 @@ flutter test
 - [PRODUCT.md](PRODUCT.md) — Product definition and positioning
 
 **Technical Setup:**
-- [Supabase Groq Setup](docs/SUPABASE_GROQ_SETUP.md) — AI proxy configuration
+- Supabase Edge Function setup: Deploy `supabase/functions/groq-proxy/` with GROQ_API_KEY environment variable
 
 ---
 
@@ -174,13 +176,6 @@ flutter test
 - No automated background scheduling (NFR-6 requirement not met)
 - No Cloud Functions or cron jobs for automated scanning
 
-**FR-5 (Notifications):**
-- Notification generation with AI personalization works
-- Fallback templates implemented (NFR-7 compliance)
-- Manual trigger only (Test Notification button)
-- No automated scheduling or triggering of notifications
-- scheduleNotification() method does not exist
-
 **Testing:**
 - Limited widget/integration test coverage for UI flows
 - Manual testing required for complete onboarding journey
@@ -198,15 +193,15 @@ flutter test
 
 ## Implementation Status
 
-**Implemented (3/6 FRs — 50%):**
+**Implemented (4/6 FRs — 67%):**
 - ✅ FR-1: Role-Based Onboarding & AI Style Selection
 - ✅ FR-4: Role-Contextual Habit Tracker
+- ✅ FR-5: Task Plan Document Generation & Management
 - ✅ FR-6: Behavioral Analytics Dashboard
 
-**Partially Implemented (3/6 FRs — 50%):**
+**Partially Implemented (2/6 FRs — 33%):**
 - ⚠️ FR-2: Google Calendar Synchronization (read works, write exists with graceful fallback for read-only calendars)
 - ⚠️ FR-3: Proactive Role-Based Task Preparation (AI generation works, manual trigger only, no automated background scheduling)
-- ⚠️ FR-5: Customized Short Notifications (generation works, no automated scheduling)
 
 ---
 

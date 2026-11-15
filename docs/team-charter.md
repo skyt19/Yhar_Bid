@@ -54,7 +54,7 @@ Yhar Bid addresses this by:
 | **FR-2** | Two-Way Google Calendar Synchronization | OAuth 2.0 integration with multi-calendar support; bidirectional event sync |
 | **FR-3** | Proactive Role-Based Task Preparation | AI-generated preparation plans for upcoming events based on user role and event context |
 | **FR-4** | Role-Contextual Habit Tracker | Habit tracking with goals relevant to selected user role |
-| **FR-5** | Customized Short Notifications | Style-aware notifications with offline fallback templates |
+| **FR-5** | Task Plan Document Generation & Management | AI-generated preparation plans saved as downloadable UTF-8 TXT documents with Firebase Storage |
 | **FR-6** | Behavioral Analytics Dashboard | Weekly calendar adherence and habit success rate visualization |
 
 ### Out of Scope (Explicit Boundaries)
@@ -251,7 +251,7 @@ docs: add 401 error troubleshooting
 **Based on SRS Functional Requirements:**
 1. **Phase 1:** Core authentication and calendar integration (FR-1, FR-2)
 2. **Phase 2:** AI preparation and task management (FR-3, FR-4)
-3. **Phase 3:** Notifications and analytics (FR-5, FR-6)
+3. **Phase 3:** Task plan documents and analytics (FR-5, FR-6)
 
 **Priority Drivers:**
 - User value and MVP scope
@@ -439,9 +439,12 @@ The Yhar Bid project will be considered successful when:
 - `SRS.md` — Software Requirements Specification v1.1
 - `PRODUCT.md` — Product vision and positioning
 - `README.md` — Project overview and setup instructions
-- `TASK_PLAN_PIPELINE_IMPLEMENTATION.md` — Task preparation feature documentation
-- `PRODUCTION_AI_DEPLOYMENT.md` — AI service integration guide
-- `docs/SUPABASE_GROQ_SETUP.md` — Groq proxy setup instructions
+- `docs/team-charter.md` — Team structure and collaboration rules
+- `docs/golden-thread.md` — Requirements traceability
+- `docs/final-report.md` — M3 implementation status report
+- `docs/design/` — Architecture, data models, sequence diagrams, use cases
+
+**Note:** Technical implementation reports (TASK_PLAN_PIPELINE_IMPLEMENTATION.md, PRODUCTION_AI_DEPLOYMENT.md, SUPABASE_GROQ_SETUP.md) referenced in earlier planning documents were not committed to the repository. Implementation details are documented in source code comments and the above final report.
 
 ### Technology Stack
 - **Frontend:** Flutter (Dart), GetX state management, `table_calendar`, `flutter_local_notifications`
