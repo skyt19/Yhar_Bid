@@ -7,6 +7,7 @@ import '../../models/task_model.dart';
 import '../../controllers/task_controller.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import '../../utils/dialog_utils.dart';
 
 class TaskDetailView extends StatelessWidget {
   final TaskModel task;
@@ -186,28 +187,19 @@ class TaskDetailView extends StatelessWidget {
     }
   }
 
-  void _confirmDelete(BuildContext context, TaskController taskCtrl) {
-    showDialog(
+  void _confirmDelete(BuildContext context, TaskController taskCtrl) async {
+    final confirmed = await DialogUtils.showConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              taskCtrl.deleteTask(task.id);
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close detail view
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete Task',
+      message: 'Are you sure you want to delete this task?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmColor: Colors.red,
     );
+
+    if (confirmed && context.mounted) {
+      taskCtrl.deleteTask(task.id);
+      Navigator.pop(context); // Close detail view
+    }
   }
 }

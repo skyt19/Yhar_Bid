@@ -8,6 +8,7 @@ import '../../models/task_model.dart';
 import '../theme/app_theme.dart';
 import 'tasks_detail_view.dart';
 import 'package:intl/intl.dart';
+import '../../utils/dialog_utils.dart';
 
 class AllTasksView extends StatelessWidget {
   const AllTasksView({super.key});
@@ -89,7 +90,7 @@ class AllTasksView extends StatelessWidget {
       children: [
         Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+        Text(label.tr, style: const TextStyle(fontSize: 14, color: Colors.grey)),
       ],
     );
   }
