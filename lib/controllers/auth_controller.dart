@@ -1,10 +1,14 @@
 /// lib/controllers/auth_controller.dart
 /// Controller จัดการ Authentication State พร้อม Session Persistence
+/// Phase 6: Auto-sync after login
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../main.dart';
+import 'calendar_controller.dart';
+import 'task_controller.dart';
+import 'ai_controller.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
@@ -129,6 +133,7 @@ class AuthController extends GetxController {
   }
 
   /// เริ่มกระบวนการ Sign In ด้วย Google (รองรับ Calendar Scope)
+  /// Phase 6: Includes automatic data synchronization
   Future<void> signInWithGoogle() async {
     isLoading.value = true;
     errorMessage.value = '';
@@ -138,7 +143,10 @@ class AuthController extends GetxController {
     if (response.status && response.data != null) {
       currentUser.value = response.data as UserModel;
       _saveSession(currentUser.value!);
-      
+
+      // Phase 6: Automatic synchronization after login
+      await _performAutoSync();
+
       // ตรวจสอบว่ามี Role แล้วหรือยัง
       if (currentUser.value!.role == UserRole.student) {
         Get.offNamed(AppRoutes.roleSelection);
@@ -147,6 +155,43 @@ class AuthController extends GetxController {
       }
     } else {
       errorMessage.value = response.message;
+    }
+  }
+
+  /// Phase 6: Automatic synchronization after login
+  Future<void> _performAutoSync() async {
+    try {
+      // Sync calendar events
+      try {
+        final calendarCtrl = Get.find<CalendarController>();
+        await calendarCtrl.fetchEvents();
+        print('✅ Auto-sync: Calendar events synced');
+      } catch (e) {
+        print('⚠️ Auto-sync: Calendar sync skipped (controller not found)');
+      }
+
+      // Sync tasks
+      try {
+        final taskCtrl = Get.find<TaskController>();
+        await taskCtrl.fetchTasks();
+        print('✅ Auto-sync: Tasks synced');
+      } catch (e) {
+        print('⚠️ Auto-sync: Task sync skipped (controller not found)');
+      }
+
+      // Load AI conversation history
+      try {
+        final aiCtrl = Get.find<AiController>();
+        await aiCtrl.loadConversations();
+        print('✅ Auto-sync: AI conversations synced');
+      } catch (e) {
+        print('⚠️ Auto-sync: AI conversation sync skipped (controller not found)');
+      }
+
+      print('✅ Auto-sync completed successfully');
+    } catch (e) {
+      print('⚠️ Auto-sync encountered errors: $e');
+      // Don't block login on sync failure
     }
   }
 

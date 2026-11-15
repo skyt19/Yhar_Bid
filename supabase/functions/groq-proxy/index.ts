@@ -26,9 +26,9 @@ const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY") ?? "";
 const GROQ_MODEL = "openai/gpt-oss-20b"; // LOCKED — client cannot override
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_TIMEOUT_MS = 30_000;
-const MAX_BODY_BYTES = 32_000; // ~32 KB request cap
-const MAX_MESSAGES = 20;
-const MAX_TOKENS_CEILING = 1500;
+const MAX_BODY_BYTES = 64_000; // ~64 KB request cap for larger contexts
+const MAX_MESSAGES = 30;
+const MAX_TOKENS_CEILING = 7500; // Increased for detailed preparation plans
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": Deno.env.get("CORS_ALLOW_ORIGIN") ??

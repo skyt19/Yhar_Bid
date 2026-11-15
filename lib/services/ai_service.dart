@@ -19,6 +19,8 @@ import '../models/context_snapshot_model.dart';
 import '../models/ai_discovery_model.dart';
 import '../core/config/app_config.dart';
 import 'ai_service_types.dart';
+import 'ai_personality_service.dart';
+import 'ai_json_parser.dart';
 
 /// Standard AI Service Response Format
 class AiServiceResponse {
@@ -136,18 +138,29 @@ class AiService {
     }
   }
 
-  /// Build system prompt for a user role
-  String _buildRoleSystemPrompt(String role, String languageCode) {
-    final Map<String, String> roleDescriptions = {
-      'student': 'You are an AI assistant helping a student manage academic responsibilities.',
-      'corporateEmployee': 'You are an AI assistant helping a corporate employee manage work responsibilities.',
-      'educator': 'You are an AI assistant helping an educator manage teaching responsibilities.',
-    };
+  /// Build system prompt for a user role and personality level
+  /// Integrates JARVIS personality system (Phase 3)
+  String _buildRoleSystemPrompt(
+    String role,
+    String languageCode, {
+    AiPersonality personality = AiPersonality.politeJarvis,
+  }) {
+    // Map old personality enum to new PersonalityLevel
+    PersonalityLevel level;
+    switch (personality) {
+      case AiPersonality.politeJarvis:
+        level = PersonalityLevel.standard;
+        break;
+      case AiPersonality.friendly:
+        level = PersonalityLevel.advanced;
+        break;
+      case AiPersonality.aggressiveMotivator:
+        level = PersonalityLevel.executive;
+        break;
+    }
 
-    final description = roleDescriptions[role] ?? roleDescriptions['student']!;
-    final language = languageCode == 'th' ? 'Thai' : 'English';
-
-    return '$description Respond in $language. Be concise and practical.';
+    // Get personality-based system instruction
+    return AiPersonalityService.getSystemInstruction(level, languageCode);
   }
 
   /// Generate task outline from existing task data
@@ -284,7 +297,7 @@ class AiService {
 
       debugPrint('🤖 [AI Discovery] Sending request to Groq proxy...');
 
-      // Call Groq via Supabase proxy
+      // Call Groq via Supabase proxy with increased token limit
       final response = await http.post(
         Uri.parse(_proxyUrl),
         headers: {
@@ -299,9 +312,9 @@ class AiService {
             {'role': 'user', 'content': discoveryPrompt},
           ],
           'temperature': 0.7,
-          'max_tokens': 4000,
+          'max_tokens': 7500, // Increased for detailed, actionable preparation plans
         }),
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 45)); // Extended timeout for larger responses
 
       if (response.statusCode != 200) {
         debugPrint('❌ [AI Discovery] HTTP ${response.statusCode}: ${response.body}');
@@ -416,11 +429,13 @@ class AiService {
     return buffer.toString();
   }
 
-  /// Simple chat interface — wraps generateTaskSuggestions for backward compatibility
+  /// Simple chat interface with personality support
   /// Used by: ai_controller.dart, groq_api_test.dart
   Future<String> chat({
     required String message,
     required UserRole role,
+    AiPersonality personality = AiPersonality.politeJarvis,
+    String languageCode = 'th',
   }) async {
     try {
       final response = await _callProxy(
@@ -428,7 +443,11 @@ class AiService {
         messages: [
           {
             'role': 'system',
-            'content': _buildRoleSystemPrompt(role.name, 'th'),
+            'content': _buildRoleSystemPrompt(
+              role.name,
+              languageCode,
+              personality: personality,
+            ),
           },
           {'role': 'user', 'content': message},
         ],
@@ -694,39 +713,35 @@ Respond with JSON:
     return sanitized;
   }
 
-  /// Extract JSON from AI response with markdown fence handling
+  /// Extract JSON from AI response with robust parsing
   /// Supports: plain JSON, ```json fences, ``` fences, surrounded text
   @visibleForTesting
   String extractJsonFromResponse(String content) {
     String text = content.trim();
 
-    // Strategy 1: Look for ```json or ``` fenced blocks
-    final RegExp jsonFencePattern = RegExp(
-      r'```(?:json)?\s*\n?([\s\S]*?)\n?```',
-      multiLine: true,
-    );
+    // Try code fence extraction first
+    final patterns = [
+      RegExp(r'```json\s*\n?([\s\S]*?)\n?```', multiLine: true),
+      RegExp(r'```\s*\n?([\s\S]*?)\n?```', multiLine: true),
+    ];
 
-    final Match? fenceMatch = jsonFencePattern.firstMatch(text);
-    if (fenceMatch != null && fenceMatch.groupCount >= 1) {
-      final String extracted = fenceMatch.group(1)?.trim() ?? '';
-      if (extracted.isNotEmpty) {
-        debugPrint('📦 [JSON Extract] Found fenced JSON (${extracted.length} chars)');
-        return extracted;
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(text);
+      if (match != null && match.groupCount >= 1) {
+        final extracted = match.group(1)?.trim() ?? '';
+        if (extracted.isNotEmpty) {
+          return extracted;
+        }
       }
     }
 
-    // Strategy 2: Find first '{' and last '}' for embedded JSON
-    final int firstBrace = text.indexOf('{');
-    final int lastBrace = text.lastIndexOf('}');
-
+    // Try brace extraction
+    final firstBrace = text.indexOf('{');
+    final lastBrace = text.lastIndexOf('}');
     if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace) {
-      final String extracted = text.substring(firstBrace, lastBrace + 1);
-      debugPrint('📦 [JSON Extract] Found embedded JSON (${extracted.length} chars)');
-      return extracted;
+      return text.substring(firstBrace, lastBrace + 1);
     }
 
-    // Strategy 3: Return trimmed text as-is (already plain JSON)
-    debugPrint('📦 [JSON Extract] Using plain text (${text.length} chars)');
     return text;
   }
 
@@ -734,15 +749,21 @@ Respond with JSON:
   @visibleForTesting
   ParseResult parseDiscoveryResponse(String content) {
     try {
-      // Phase A: Extract JSON from response
-      final String jsonText = extractJsonFromResponse(content);
+      // Phase A: Extract and parse JSON with repair support
+      final parseResult = AiJsonParser.parse(content, allowRepair: true);
 
-      if (jsonText.isEmpty) {
-        return const ParseResult.failure('Empty response after extraction');
+      if (!parseResult.success) {
+        final diagnostic = AiJsonParser.getDiagnostic(content,
+          FormatException(parseResult.error ?? 'Unknown error'));
+        debugPrint('❌ [AI Discovery] Parse failed:\n$diagnostic');
+        return ParseResult.failure(parseResult.error ?? 'Parse failed');
       }
 
-      // Parse JSON
-      final dynamic parsed = jsonDecode(jsonText);
+      if (parseResult.wasRepaired) {
+        debugPrint('⚠️ [AI Discovery] JSON was repaired during parsing');
+      }
+
+      final dynamic parsed = parseResult.data;
 
       if (parsed is! Map<String, dynamic>) {
         return const ParseResult.failure('Response is not a JSON object');
@@ -762,8 +783,8 @@ Respond with JSON:
 
       return ParseResult.success(result);
     } on FormatException catch (e) {
-      debugPrint('⚠️ [AI Discovery] JSON parse error: $e');
-      debugPrint('   Raw content (first 500 chars): ${content.substring(0, content.length > 500 ? 500 : content.length)}');
+      final diagnostic = AiJsonParser.getDiagnostic(content, e);
+      debugPrint('⚠️ [AI Discovery] JSON parse error:\n$diagnostic');
       return ParseResult.failure('Invalid JSON format: ${e.message}');
     } catch (e) {
       debugPrint('⚠️ [AI Discovery] Parse error: $e');

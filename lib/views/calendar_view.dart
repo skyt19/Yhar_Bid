@@ -87,6 +87,12 @@ class CalendarView extends StatelessWidget {
         ],
       ),
       body: isWide ? _buildWideLayout(calCtrl, proactiveCtrl) : _buildNarrowLayout(calCtrl, proactiveCtrl),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Get.toNamed('/tasks/create'),
+        backgroundColor: AppTheme.accentGreen,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text('add_task'.tr, style: const TextStyle(color: Colors.white)),
+      ),
     );
   }
 

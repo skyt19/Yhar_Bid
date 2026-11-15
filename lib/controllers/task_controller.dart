@@ -280,4 +280,34 @@ ${task.dueDate != null ? 'กำหนดส่ง: ${task.dueDate.toString().su
           snackPosition: SnackPosition.BOTTOM);
     }
   }
+
+  /// Phase 8: Delete all tasks with safe user-scoped deletion
+  Future<void> deleteAllTasks() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print('❌ Cannot delete tasks: User not authenticated');
+        return;
+      }
+
+      final batch = FirebaseFirestore.instance.batch();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('tasks')
+          .get();
+
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+      tasks.clear();
+
+      print('✅ Deleted ${snapshot.docs.length} tasks');
+    } catch (e) {
+      print('❌ Failed to delete all tasks: $e');
+      rethrow;
+    }
+  }
 }

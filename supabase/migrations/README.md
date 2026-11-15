@@ -1,0 +1,6 @@
+-- Deploy with Supabase CLI:
+-- 1. supabase link --project-ref aanochhlejpbhdhkgjpx
+-- 2. supabase db push
+-- 
+-- Or apply manually via Supabase Dashboard SQL Editor:
+-- Run the contents of 20261115_chat_history.sql
