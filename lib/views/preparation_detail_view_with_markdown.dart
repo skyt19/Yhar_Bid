@@ -212,8 +212,8 @@ class _PreparationDetailViewWithMarkdownState extends State<PreparationDetailVie
           SizedBox(
             width: 600,
             child: MarkdownViewerPanel(
+              title: 'แผนเตรียมงาน',
               markdownContent: _markdownContent!,
-              fileName: 'preparation_${widget.plan.eventId}.md',
               onClose: _closeMarkdown,
             ),
           ),
