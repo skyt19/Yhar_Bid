@@ -270,3 +270,4 @@ Before finalizing any slide, verify:
 - [ ] Does the color usage follow the hierarchy (dominant/secondary/accent)?
 - [ ] Would you recognize which deck this slide belongs to if seen alone?
 - [ ] Does this layout differ from the previous slide's layout?
+
