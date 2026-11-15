@@ -10,9 +10,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? 'https://aanochhlejpbhdhkgj
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+  'Access-Control-Allow-Origin': 'https://yhar-bid.web.app',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, content-type',
 };
 
 // ----- Firebase Token Verification (RS256) ---------------------
@@ -274,6 +274,22 @@ serve(async (req) => {
         const { error } = await supabase
           .from('conversations')
           .delete()
+          .eq('id', conversationId)
+          .eq('user_id', userId);
+
+        if (error) throw error;
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'update_conversation': {
+        const { conversationId, title } = params;
+
+        // Verify ownership before update
+        const { error } = await supabase
+          .from('conversations')
+          .update({ title })
           .eq('id', conversationId)
           .eq('user_id', userId);
 

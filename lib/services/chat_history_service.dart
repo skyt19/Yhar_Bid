@@ -1,20 +1,20 @@
 /// lib/services/chat_history_service.dart
 /// Chat History Service - Persistent storage via Supabase
-/// Phase 4: Conversation and message management
+/// SECURITY: Routes all operations through chat-db Edge Function with RS256 JWT verification
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation_model.dart';
-import '../core/config/app_config.dart';
 
 class ChatHistoryService {
   static const String _supabaseUrl = 'https://aanochhlejpbhdhkgjpx.supabase.co';
-  static const String _conversationsEndpoint = '/rest/v1/conversations';
-  static const String _messagesEndpoint = '/rest/v1/messages';
+  static const String _chatDbEndpoint = '/functions/v1/chat-db';
+  static const Duration _timeout = Duration(seconds: 30);
 
   /// Get authenticated headers with Firebase ID token
+  /// Token is verified server-side by chat-db Edge Function using RS256
   Future<Map<String, String>> _getHeaders() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -28,76 +28,89 @@ class ChatHistoryService {
 
     return {
       'Content-Type': 'application/json',
-      'apikey': AppConfig.supabasePublishableKey,
       'Authorization': 'Bearer $idToken',
     };
   }
 
-  /// Create a new conversation
+  /// Create a new conversation via secure Edge Function
   Future<ChatConversation> createConversation({
     String? title,
     String personalityLevel = 'standard',
   }) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw Exception('User not authenticated');
-
     final headers = await _getHeaders();
 
-    final response = await http.post(
-      Uri.parse('$_supabaseUrl$_conversationsEndpoint'),
-      headers: headers,
-      body: jsonEncode({
-        'user_id': user.uid,
-        'title': title,
-        'personality_level': personalityLevel,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'create_conversation',
+            'title': title,
+            'personalityLevel': personalityLevel,
+          }),
+        )
+        .timeout(_timeout);
 
-    if (response.statusCode == 201) {
-      final json = jsonDecode(response.body) as List<dynamic>;
-      return ChatConversation.fromJson(json[0] as Map<String, dynamic>);
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = json['data'] as Map<String, dynamic>;
+      return ChatConversation.fromJson(data);
     }
 
-    throw Exception('Failed to create conversation: ${response.statusCode}');
+    throw Exception('Failed to create conversation: ${response.statusCode} - ${response.body}');
   }
 
-  /// Get all conversations for current user
+  /// Get all conversations for current user via secure Edge Function
   Future<List<ChatConversation>> getConversations({
     int limit = 50,
   }) async {
     final headers = await _getHeaders();
 
-    final response = await http.get(
-      Uri.parse('$_supabaseUrl$_conversationsEndpoint?order=updated_at.desc&limit=$limit'),
-      headers: headers,
-    );
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'list_conversations',
+            'limit': limit,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
-      return json.map((item) => ChatConversation.fromJson(item as Map<String, dynamic>)).toList();
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> conversations = json['data'] as List<dynamic>;
+      return conversations.map((item) => ChatConversation.fromJson(item as Map<String, dynamic>)).toList();
     }
 
-    throw Exception('Failed to get conversations: ${response.statusCode}');
+    throw Exception('Failed to get conversations: ${response.statusCode} - ${response.body}');
   }
 
-  /// Get messages for a conversation
+  /// Get messages for a conversation via secure Edge Function
   Future<List<ChatMessage>> getMessages(String conversationId) async {
     final headers = await _getHeaders();
 
-    final response = await http.get(
-      Uri.parse('$_supabaseUrl$_messagesEndpoint?conversation_id=eq.$conversationId&order=created_at.asc'),
-      headers: headers,
-    );
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'get_messages',
+            'conversationId': conversationId,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final List<dynamic> json = jsonDecode(response.body) as List<dynamic>;
-      return json.map((item) => ChatMessage.fromJson(item as Map<String, dynamic>)).toList();
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> messages = json['data'] as List<dynamic>;
+      return messages.map((item) => ChatMessage.fromJson(item as Map<String, dynamic>)).toList();
     }
 
-    throw Exception('Failed to get messages: ${response.statusCode}');
+    throw Exception('Failed to get messages: ${response.statusCode} - ${response.body}');
   }
 
-  /// Add a message to a conversation
+  /// Add message to conversation via secure Edge Function
   Future<ChatMessage> addMessage({
     required String conversationId,
     required String role,
@@ -106,68 +119,67 @@ class ChatHistoryService {
   }) async {
     final headers = await _getHeaders();
 
-    final response = await http.post(
-      Uri.parse('$_supabaseUrl$_messagesEndpoint'),
-      headers: headers,
-      body: jsonEncode({
-        'conversation_id': conversationId,
-        'role': role,
-        'content': content,
-        if (metadata != null) 'metadata': metadata,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'add_message',
+            'conversationId': conversationId,
+            'role': role,
+            'content': content,
+            if (metadata != null) 'metadata': metadata,
+          }),
+        )
+        .timeout(_timeout);
 
-    if (response.statusCode == 201) {
-      final json = jsonDecode(response.body) as List<dynamic>;
-
-      // Update conversation updated_at
-      await _updateConversationTimestamp(conversationId);
-
-      return ChatMessage.fromJson(json[0] as Map<String, dynamic>);
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = json['data'] as Map<String, dynamic>;
+      return ChatMessage.fromJson(data);
     }
 
-    throw Exception('Failed to add message: ${response.statusCode}');
+    throw Exception('Failed to add message: ${response.statusCode} - ${response.body}');
   }
 
-  /// Update conversation updated_at timestamp
-  Future<void> _updateConversationTimestamp(String conversationId) async {
-    final headers = await _getHeaders();
-
-    await http.patch(
-      Uri.parse('$_supabaseUrl$_conversationsEndpoint?id=eq.$conversationId'),
-      headers: headers,
-      body: jsonEncode({
-        'updated_at': DateTime.now().toIso8601String(),
-      }),
-    );
-  }
-
-  /// Update conversation title
-  Future<void> updateConversationTitle(String conversationId, String title) async {
-    final headers = await _getHeaders();
-
-    final response = await http.patch(
-      Uri.parse('$_supabaseUrl$_conversationsEndpoint?id=eq.$conversationId'),
-      headers: headers,
-      body: jsonEncode({'title': title}),
-    );
-
-    if (response.statusCode != 204 && response.statusCode != 200) {
-      throw Exception('Failed to update conversation: ${response.statusCode}');
-    }
-  }
-
-  /// Delete a conversation and its messages
+  /// Delete conversation via secure Edge Function
   Future<void> deleteConversation(String conversationId) async {
     final headers = await _getHeaders();
 
-    final response = await http.delete(
-      Uri.parse('$_supabaseUrl$_conversationsEndpoint?id=eq.$conversationId'),
-      headers: headers,
-    );
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'delete_conversation',
+            'conversationId': conversationId,
+          }),
+        )
+        .timeout(_timeout);
 
-    if (response.statusCode != 204 && response.statusCode != 200) {
-      throw Exception('Failed to delete conversation: ${response.statusCode}');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete conversation: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  /// Update conversation title via secure Edge Function
+  Future<void> updateConversationTitle(String conversationId, String title) async {
+    final headers = await _getHeaders();
+
+    final response = await http
+        .post(
+          Uri.parse('$_supabaseUrl$_chatDbEndpoint'),
+          headers: headers,
+          body: jsonEncode({
+            'operation': 'update_conversation',
+            'conversationId': conversationId,
+            'title': title,
+          }),
+        )
+        .timeout(_timeout);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update conversation: ${response.statusCode} - ${response.body}');
     }
   }
 
