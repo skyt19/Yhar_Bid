@@ -1,5 +1,5 @@
 /// lib/controllers/ai_controller.dart
-/// Controller จัดการการสื่อสารกับ Gemini AI
+/// Controller จัดการการสื่อสารกับ Groq AI (openai/gpt-oss-20b)
 /// Refactored: ใช้ AiService Layer แทนการเรียก API โดยตรง (Clean Architecture)
 /// Phase 1-3: Context-Aware AI with Dynamic Discovery
 /// Phase 4: Persistent Chat History via Supabase

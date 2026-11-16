@@ -80,7 +80,7 @@ class DashboardView extends StatelessWidget {
                 _buildFeatureStatus('FR-2: Calendar Sync', calCtrl.events.isNotEmpty, 'Events: ${calCtrl.events.length}'),
                 _buildFeatureStatus('FR-3: AI Preparation', proactiveCtrl.proposals.isNotEmpty, 'Proposals: ${proactiveCtrl.proposals.length}'),
                 _buildFeatureStatus('FR-4: Habit Tracker', habitCtrl.habits.isNotEmpty, 'Habits: ${habitCtrl.habits.length}'),
-                _buildFeatureStatus('FR-5: Notifications', false, 'Status: Not Implemented'),
+                _buildFeatureStatus('FR-5: Notifications', true, 'Service: Implemented'),
                 _buildFeatureStatus('FR-6: Analytics', true, 'Overall: ${analyticsCtrl.overallScore.toStringAsFixed(1)}%'),
               ],
             );
@@ -213,7 +213,7 @@ class DashboardView extends StatelessWidget {
                 proactiveCtrl.runProactiveScan(specificEventId: event.id);
               },
               icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('ให้เลขาเตรียมหัวข้อ (Gemma AI)'),
+              label: const Text('ให้เลขาเตรียมหัวข้อ (Groq AI)'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.accentGreen,
                 foregroundColor: Colors.white,

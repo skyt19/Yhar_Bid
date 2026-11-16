@@ -61,7 +61,7 @@ class SrsTestLabView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildTestSection(
-              title: 'FR-3: Proactive Secretary (gemma-4-26b-a4b-it)',
+              title: 'FR-3: Proactive Secretary (openai/gpt-oss-20b via Groq)',
               description: 'AI prepares role-specific content for upcoming events',
               child: _buildProactiveTestPanel(proactiveCtrl),
             ),
@@ -424,7 +424,7 @@ class SrsTestLabView extends StatelessWidget {
           const SizedBox(height: 12),
           SwitchListTile(
             title: const Text('AI Outage Simulation (NFR-7)'),
-            subtitle: Text(aiOutageMode ? 'Fallback templates active' : 'Using Gemini API'),
+            subtitle: Text(aiOutageMode ? 'Fallback templates active' : 'Using Groq API'),
             value: aiOutageMode,
             activeColor: AppTheme.accentGreen,
             onChanged: (bool value) {

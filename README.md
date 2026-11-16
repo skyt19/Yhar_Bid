@@ -89,9 +89,9 @@ Many users know what they need to do but may procrastinate, miss planned activit
 | Name | Student ID | GitHub | Role |
 |------|-----------|--------|------|
 | Peerapap Kummongkon | 6931503057 | skyt19 | Development |
-| Achitapon Wiangmoon | (from SRS) | 6931503082 | Development |
+| Achitapon Wiangmoon | 6931503082 | 6931503082 | Development |
 | Nattakul Pasoda | 6931503034 | SX-67 | Development |
-| Phakpoom Jaiwoot | 6931503082 | Poom453, 6931503082 | Development |
+| Phakpoom Jaiwoot | 6931503082 | Poom453 | Development |
 
 *Note: Git history shows 4 active contributors; SRS.md lists 5 team members. Mapping between SRS names and GitHub accounts is partially verified.*
 

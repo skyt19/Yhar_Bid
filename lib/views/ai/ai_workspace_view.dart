@@ -1,6 +1,8 @@
 /// lib/views/ai/ai_workspace_view.dart
 /// Redesigned AI Workspace — Intelligent preparation workflow interface
 /// Emphasizes AI-powered conversation with personality-matched responses
+library;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/ai_controller.dart';
@@ -8,6 +10,7 @@ import '../../controllers/auth_controller.dart';
 import '../../models/user_model.dart';
 import '../theme/app_theme.dart';
 import 'ai_context_analysis_view.dart';
+import 'ai_workspace_view_sidebar.dart';
 
 class AIWorkspaceView extends StatefulWidget {
   const AIWorkspaceView({super.key});
@@ -25,7 +28,9 @@ class _AIWorkspaceViewState extends State<AIWorkspaceView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _inputFocus.requestFocus();
+      Get.find<AiController>().loadConversations();
     });
   }
 
@@ -64,64 +69,94 @@ class _AIWorkspaceViewState extends State<AIWorkspaceView> {
     final authCtrl = Get.find<AuthController>();
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth >= 900;
+    final showSidebar = screenWidth >= 1024;
+
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
+      appBar: !showSidebar ? AppBar(
+        backgroundColor: AppTheme.backgroundLight,
+        elevation: 0,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.history, color: AppTheme.accentGreen),
+            tooltip: 'Chat History',
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: AppTheme.textSecondary),
+            onPressed: () => Get.back(),
+          ),
+        ],
+      ) : null,
+      drawer: !showSidebar ? AIWorkspaceSidebarBuilder.buildDrawer(aiCtrl) : null,
       body: SafeArea(
-        child: Column(
+        child: Row(
           children: [
-            // Header with AI personality indicator
-            _buildHeader(authCtrl, aiCtrl, isWide),
+            // Desktop sidebar
+            if (showSidebar) AIWorkspaceSidebarBuilder.buildSidebar(aiCtrl),
 
-            // Chat conversation area
+            // Main chat area
             Expanded(
-              child: Container(
-                margin: EdgeInsets.symmetric(
-                  horizontal: isWide ? 32 : 16,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceLight,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-                  border: Border.all(color: AppTheme.borderColor),
-                  boxShadow: AppTheme.shadowCard,
-                ),
-                child: Column(
-                  children: [
-                    // Conversation messages
-                    Expanded(
-                      child: Obx(() {
-                        final msgs = aiCtrl.chatMessages;
-                        final loading = aiCtrl.isTyping.value;
+              child: Column(
+                children: [
+                  // Header with AI personality indicator
+                  _buildHeader(authCtrl, aiCtrl, isWide),
 
-                        if (msgs.isEmpty && !loading) {
-                          return _buildEmptyState(authCtrl);
-                        }
+                  // Chat conversation area
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.symmetric(
+                        horizontal: isWide ? 32 : 16,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceLight,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                        border: Border.all(color: AppTheme.borderColor),
+                        boxShadow: AppTheme.shadowCard,
+                      ),
+                      child: Column(
+                        children: [
+                          // Conversation messages
+                          Expanded(
+                            child: Obx(() {
+                              final msgs = aiCtrl.chatMessages;
+                              final loading = aiCtrl.isTyping.value;
 
-                        _scrollToBottom();
-                        return ListView.builder(
-                          controller: _scrollCtrl,
-                          padding: const EdgeInsets.all(24),
-                          itemCount: msgs.length + (loading ? 1 : 0),
-                          itemBuilder: (context, i) {
-                            if (i == msgs.length) {
-                              return _buildTypingIndicator();
-                            }
-                            final msg = msgs[i];
-                            return _buildMessageBubble(
-                              isUser: msg['role'] == 'user',
-                              content: msg['content'] ?? '',
-                              personality: authCtrl.currentUser.value?.personality ?? AiPersonality.politeJarvis,
-                            );
-                          },
-                        );
-                      }),
+                              if (msgs.isEmpty && !loading) {
+                                return _buildEmptyState(authCtrl);
+                              }
+
+                              _scrollToBottom();
+                              return ListView.builder(
+                                controller: _scrollCtrl,
+                                padding: const EdgeInsets.all(24),
+                                itemCount: msgs.length + (loading ? 1 : 0),
+                                itemBuilder: (context, i) {
+                                  if (i == msgs.length) {
+                                    return _buildTypingIndicator();
+                                  }
+                                  final msg = msgs[i];
+                                  return _buildMessageBubble(
+                                    isUser: msg['role'] == 'user',
+                                    content: msg['content'] ?? '',
+                                    personality: authCtrl.currentUser.value?.personality ?? AiPersonality.politeJarvis,
+                                  );
+                                },
+                              );
+                            }),
+                          ),
+
+                          // Input bar
+                          _buildInputBar(aiCtrl),
+                        ],
+                      ),
                     ),
-
-                    // Input bar
-                    _buildInputBar(aiCtrl),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

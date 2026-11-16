@@ -40,7 +40,13 @@ class AIWorkspaceSidebarBuilder {
                 itemBuilder: (context, index) {
                   final conv = conversations[index];
                   final isSelected = aiCtrl.currentConversation.value?.id == conv.id;
-                  return _buildConversationTile(aiCtrl, conv, isSelected);
+                  return _buildConversationTile(
+                    context,
+                    aiCtrl,
+                    conv,
+                    isSelected,
+                    closeDrawer: false,
+                  );
                 },
               );
             }),
@@ -75,7 +81,13 @@ class AIWorkspaceSidebarBuilder {
                   itemBuilder: (context, index) {
                     final conv = conversations[index];
                     final isSelected = aiCtrl.currentConversation.value?.id == conv.id;
-                    return _buildConversationTile(aiCtrl, conv, isSelected);
+                    return _buildConversationTile(
+                    context,
+                    aiCtrl,
+                    conv,
+                    isSelected,
+                    closeDrawer: true,
+                  );
                   },
                 );
               }),
@@ -125,16 +137,17 @@ class AIWorkspaceSidebarBuilder {
   }
 
   static Widget _buildConversationTile(
+    BuildContext context,
     AiController aiCtrl,
     ChatConversation conversation,
-    bool isSelected,
-  ) {
+    bool isSelected, {
+    bool closeDrawer = false,
+  }) {
     return InkWell(
       onTap: () {
-        aiCtrl.selectConversation(conversation.id);
-        // Close drawer on mobile
-        if (Get.context != null) {
-          Navigator.of(Get.context!).pop();
+        aiCtrl.loadConversation(conversation.id);
+        if (closeDrawer) {
+          Navigator.of(context).pop();
         }
       },
       child: Container(

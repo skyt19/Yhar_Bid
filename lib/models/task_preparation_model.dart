@@ -16,7 +16,7 @@ class TaskPreparationModel {
   final UserRole generatedForRole;
   final PreparationContentType contentType;
   final List<String> contentItems; // รายการหัวข้อที่ AI สร้างขึ้น
-  final String rawAiResponse; // Response ดิบจาก Gemini API
+  final String rawAiResponse; // Response ดิบจาก Groq API (openai/gpt-oss-20b)
   final DateTime generatedAt;
   final bool isOfflineFallback; // ใช้ fallback template หรือเปล่า
 
